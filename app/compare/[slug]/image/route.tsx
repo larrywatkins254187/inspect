@@ -76,7 +76,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
         ))}
       </div>
       <div style={{ marginTop: 48, fontSize: 30, color: '#0F172A' }}>
-        {c.view.brokers.map((b) => b.name).join(' vs ')} — verified evidence
+        {`${c.view.brokers.map((b) => b.name).join(' vs ')} — verified evidence`}
       </div>
       <div style={{ marginTop: 12, fontSize: 22, color: '#475569' }}>
         forexinspect.com · logos are the brokers’ own marks

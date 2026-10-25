@@ -81,16 +81,26 @@ export const FIXTURE_READINGS: Reading[] = [
 ];
 
 export function seedPreviewFixtures(db: DB, now: Date): { brokerId: number; published: string[] } {
+  return seedFixtureBroker(db, now, { slug: 'example-markets-fixture', name: 'Example Markets (fixture)', synthetic: true });
+}
+
+/** One fictional broker through the real pipeline. `synthetic: false` is ONLY for the isolated e2e test database. */
+export function seedFixtureBroker(
+  db: DB,
+  now: Date,
+  o: { slug: string; name: string; synthetic: boolean },
+): { brokerId: number; published: string[] } {
   const iso = now.toISOString();
-  const slug = 'example-markets-fixture';
+  const slug = o.slug;
+  const domain = `${slug}.invalid`;
   db.prepare(
-    "INSERT OR IGNORE INTO brokers (slug, name, status, official_domain, official_domain_confirmed_at, official_domain_confirmed_by, provenance, created_at, updated_at) VALUES (?, 'Example Markets (fixture)', 'SELECTED', 'example-markets.invalid', ?, 'owner:fixture', 'SYNTHETIC_FIXTURE', ?, ?)",
-  ).run(slug, iso, iso, iso);
+    "INSERT OR IGNORE INTO brokers (slug, name, status, official_domain, official_domain_confirmed_at, official_domain_confirmed_by, provenance, created_at, updated_at) VALUES (?, ?, 'SELECTED', ?, ?, 'owner:fixture', 'SYNTHETIC_FIXTURE', ?, ?)",
+  ).run(slug, o.name, domain, iso, iso, iso);
   const brokerId = (db.prepare('SELECT id FROM brokers WHERE slug = ?').get(slug) as { id: number }).id;
-  const url = 'https://www.example-markets.invalid/accounts';
+  const url = `https://www.${domain}/accounts`;
   db.prepare(
     'INSERT OR IGNORE INTO source_registry (broker_id, url, host, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
-  ).run(brokerId, url, 'www.example-markets.invalid', iso, iso);
+  ).run(brokerId, url, `www.${domain}`, iso, iso);
   const sourceId = (db.prepare('SELECT id FROM source_registry WHERE url = ?').get(url) as { id: number }).id;
   recordOwnerPolicy(
     db,
@@ -98,7 +108,7 @@ export function seedPreviewFixtures(db: DB, now: Date): { brokerId: number; publ
     {
       use_class: 'FACT_REFERENCE',
       owner: 'Fictional fixture',
-      official_host: 'www.example-markets.invalid',
+      official_host: `www.${domain}`,
       source_type: 'SYNTHETIC_FIXTURE',
       terms_url: null,
       licence_url: null,
@@ -150,7 +160,7 @@ export function seedPreviewFixtures(db: DB, now: Date): { brokerId: number; publ
       now,
     });
   promoteDocument(db, docId, now, 'owner:fixture');
-  const rep = publishBroker(db, brokerId, now, 'owner:fixture', { synthetic: true });
+  const rep = publishBroker(db, brokerId, now, 'owner:fixture', { synthetic: o.synthetic });
   return {
     brokerId,
     published: rep.pages
