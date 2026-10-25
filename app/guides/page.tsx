@@ -5,7 +5,7 @@ import { breadcrumbLd, pageMetadata } from '@/server/seo';
 import { Breadcrumbs, JsonLd, PageHeader } from '@/ui/primitives';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Forex guides: pips, leverage, MT4 vs MT5 and choosing a broker',
+  title: 'Forex guides: pips, leverage, MT4 vs MT5',
   description:
     'Plain-English explainers on pips, leverage and margin, MetaTrader 4 versus 5, and how to check a forex broker using primary sources.',
   path: '/guides',

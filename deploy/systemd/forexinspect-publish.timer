@@ -1,0 +1,11 @@
+[Unit]
+Description=ForexInspect scheduled publication (both switches + all gates) schedule
+
+[Timer]
+OnCalendar=*-*-* 03:30:00 UTC
+
+Persistent=true
+Unit=forexinspect-publish.service
+
+[Install]
+WantedBy=timers.target

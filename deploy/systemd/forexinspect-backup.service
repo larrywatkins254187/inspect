@@ -1,0 +1,17 @@
+[Unit]
+Description=ForexInspect encrypted recovery backup
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=forexinspect
+Group=forexinspect
+WorkingDirectory=/opt/forexinspect/current
+Environment=FOREXINSPECT_SECRETS_FILE=/etc/forexinspect/production.env
+ExecStart=/usr/bin/env pnpm cli backup --upload
+TimeoutStartSec=1800
+NoNewPrivileges=true
+PrivateTmp=true
+Nice=10
+CPUQuota=50%
+IOSchedulingClass=idle

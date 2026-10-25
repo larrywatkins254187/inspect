@@ -54,6 +54,19 @@ if (cmd !== 'migrate' && cmd !== 'help' && cmd) {
   if (!ready) fail('database not migrated: run `pnpm migrate`');
 }
 
+/** Shared lock: refresh, publication, comparison and backup capture never overlap. */
+async function withSharedLock<T>(label: string, fn: () => Promise<T>): Promise<T> {
+  const { acquireLock, releaseLock } = await import('../src/domain/jobs');
+  const lockOwner = `${label}:${process.pid}`;
+  if (!acquireLock(db, 'shared', lockOwner, now(), 50 * 60_000))
+    return fail(`another refresh/publication/comparison/backup holds the shared lock (${label} skipped)`);
+  try {
+    return await fn();
+  } finally {
+    releaseLock(db, 'shared', lockOwner);
+  }
+}
+
 async function fetchDeps() {
   const f = await import('../src/domain/fetcher');
   const hosts = new Set(
@@ -610,7 +623,7 @@ const commands: Record<string, () => Promise<void> | void> = {
   },
   async 'publish-auto'() {
     const { runAutoPublication } = await import('../src/domain/publication');
-    print(runAutoPublication(db, now(), cfg));
+    print(await withSharedLock('publish-auto', async () => runAutoPublication(db, now(), cfg)));
   },
   'publication-log'() {
     print({
@@ -635,11 +648,13 @@ const commands: Record<string, () => Promise<void> | void> = {
   async 'compare-cycle'() {
     const { runCompareCycle } = await import('../src/domain/comparisons');
     print(
-      await runCompareCycle(db, runtimeProvider(), {
-        now: now(),
-        publicationEnabled: cfg.publicationEnabled,
-        enabled: cfg.publicationEnabled && cfg.autoPublicationEnabled,
-      }),
+      await withSharedLock('compare-cycle', () =>
+        runCompareCycle(db, runtimeProvider(), {
+          now: now(),
+          publicationEnabled: cfg.publicationEnabled,
+          enabled: cfg.publicationEnabled && cfg.autoPublicationEnabled,
+        }),
+      ),
     );
   },
   async 'prices-refresh'() {
@@ -711,7 +726,7 @@ const commands: Record<string, () => Promise<void> | void> = {
     const { createBackup, verifyArchive, splitParts, applyRetention } = await import('../src/domain/backup');
     if (!cfg.backup.keyFile) fail('BACKUP_ENCRYPTION_KEY_FILE is not set');
     const lockOwner = `backup:${process.pid}`;
-    if (!acquireLock(db, 'maintenance', lockOwner, now(), 30 * 60_000))
+    if (!acquireLock(db, 'shared', lockOwner, now(), 30 * 60_000))
       fail('another refresh/backup holds the shared lock');
     try {
       const res = await createBackup(db, {
@@ -771,7 +786,7 @@ const commands: Record<string, () => Promise<void> | void> = {
         retentionRemoved: applyRetention(cfg.backup.directory),
       });
     } finally {
-      releaseLock(db, 'maintenance', lockOwner);
+      releaseLock(db, 'shared', lockOwner);
     }
   },
   async 'backup-keygen'() {

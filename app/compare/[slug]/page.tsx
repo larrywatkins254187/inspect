@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!r) return { title: 'Not found', robots: { index: false, follow: true } };
   const names = r.c.view.brokers.map((b) => b.name).join(' vs ');
   return pageMetadata({
-    title: `${names}: verified evidence side by side`,
+    title: `${names}: verified evidence`,
     description:
       `Compare ${names} on ${r.c.view.shared.map((s) => s.label.toLowerCase()).join(', ')} using dated official-source facts with account and entity scope.`.slice(
         0,

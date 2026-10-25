@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const f = await getFees(slug);
   if (!f) return { title: 'Not found', robots: { index: false, follow: true } };
   return pageMetadata({
-    title: `${f.view.broker.name} spreads and commissions (verified)`,
+    title: `${f.view.broker.name} spreads and commissions`,
     description: `Source-checked EUR/USD spread and commission evidence for ${f.view.broker.name}, with account scope, cost basis and which fees are not verified.`,
     path: `/brokers/${slug}/fees`,
     noindex: !f.indexable,

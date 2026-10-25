@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const a = await getAccounts(slug);
   if (!a) return { title: 'Not found', robots: { index: false, follow: true } };
   return pageMetadata({
-    title: `${a.view.broker.name} account types compared (verified)`,
+    title: `${a.view.broker.name} account types compared`,
     description: `Verified account types and conditions for ${a.view.broker.name}: deposits, spreads, commissions, leverage and platforms per account, with unknowns marked.`,
     path: `/brokers/${slug}/accounts`,
     noindex: !a.indexable,

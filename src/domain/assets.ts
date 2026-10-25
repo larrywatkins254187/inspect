@@ -4,6 +4,18 @@ import type { DB } from '@/db/client';
 import { sha256 } from '@/lib/hash';
 import { audit } from './audit';
 
+/** File hash cache validated by path + size + mtime, so a replaced or edited file is always re-hashed. */
+const hashCache = new Map<string, { key: string; sha: string }>();
+function fileSha(file: string): string {
+  const st = fs.statSync(file);
+  const key = `${st.size}:${st.mtimeMs}`;
+  const c = hashCache.get(file);
+  if (c && c.key === key) return c.sha;
+  const sha = sha256(fs.readFileSync(file));
+  hashCache.set(file, { key, sha });
+  return sha;
+}
+
 /** Licensed asset files live outside the repository (PRD §16). */
 export const assetDir = () => path.resolve(process.env.ASSET_DIRECTORY ?? 'data/assets');
 const SAFE_FILE = /^[a-z0-9][a-z0-9._-]{0,80}\.(webp|png|svg)$/;
@@ -44,7 +56,7 @@ export function deliverableAsset(db: DB, fileName: string): { row: AssetRow; fil
   if (!broker || broker.status === 'DROPPED') return null;
   const file = path.join(assetDir(), fileName);
   if (path.dirname(file) !== assetDir() || !fs.existsSync(file)) return null;
-  if (sha256(fs.readFileSync(file)) !== row.sha256) return null;
+  if (fileSha(file) !== row.sha256) return null;
   return { row, file };
 }
 

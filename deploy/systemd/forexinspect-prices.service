@@ -1,0 +1,15 @@
+[Unit]
+Description=ForexInspect reference-rate refresh (ECB via Frankfurter)
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=forexinspect
+Group=forexinspect
+WorkingDirectory=/opt/forexinspect/current
+Environment=FOREXINSPECT_SECRETS_FILE=/etc/forexinspect/production.env
+ExecStart=/usr/bin/env pnpm cli prices-refresh
+TimeoutStartSec=120
+NoNewPrivileges=true
+PrivateTmp=true
+Nice=10

@@ -1,4 +1,4 @@
-import type { DB } from '@/db/client';
+import { stmt, type DB } from '@/db/client';
 import { hashJson } from '@/lib/hash';
 import { addHours } from '@/lib/time';
 import { audit } from './audit';
@@ -69,12 +69,12 @@ export interface AdverseFinding {
 }
 
 export const getSource = (db: DB, id: number): SourceRow | null =>
-  (db.prepare('SELECT * FROM source_registry WHERE id = ?').get(id) as SourceRow | undefined) ?? null;
+  (stmt(db, 'SELECT * FROM source_registry WHERE id = ?').get(id) as SourceRow | undefined) ?? null;
 
 export const currentPolicy = (db: DB, sourceId: number): PolicyRow | null =>
-  (db
-    .prepare('SELECT * FROM source_policies WHERE source_id = ? ORDER BY revision DESC LIMIT 1')
-    .get(sourceId) as PolicyRow | undefined) ?? null;
+  (stmt(db, 'SELECT * FROM source_policies WHERE source_id = ? ORDER BY revision DESC LIMIT 1').get(
+    sourceId,
+  ) as PolicyRow | undefined) ?? null;
 
 export interface UseDecision {
   allowed: boolean;

@@ -1,0 +1,25 @@
+[Unit]
+Description=ForexInspect web (Next.js on loopback)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=forexinspect
+Group=forexinspect
+WorkingDirectory=/opt/forexinspect/current
+Environment=NODE_ENV=production
+Environment=PORT=3417
+Environment=FOREXINSPECT_SECRETS_FILE=/etc/forexinspect/production.env
+ExecStart=/usr/bin/env pnpm start
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/forexinspect/data /opt/forexinspect/current/.next
+MemoryMax=1500M
+
+[Install]
+WantedBy=multi-user.target

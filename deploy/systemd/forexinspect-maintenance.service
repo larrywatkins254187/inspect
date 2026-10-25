@@ -1,0 +1,15 @@
+[Unit]
+Description=ForexInspect maintenance (Ask 30-day purge, run-log pruning, WAL checkpoint)
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=forexinspect
+Group=forexinspect
+WorkingDirectory=/opt/forexinspect/current
+Environment=FOREXINSPECT_SECRETS_FILE=/etc/forexinspect/production.env
+ExecStart=/usr/bin/env pnpm cli maintenance
+TimeoutStartSec=600
+NoNewPrivileges=true
+PrivateTmp=true
+Nice=10

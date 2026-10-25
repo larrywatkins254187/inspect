@@ -179,7 +179,7 @@ export const GUIDES: Guide[] = [
   },
   {
     slug: 'mt4-vs-mt5',
-    title: 'MT4 vs MT5: differences between MetaTrader 4 and MetaTrader 5',
+    title: 'MT4 vs MT5: differences between MetaTrader 4 and 5',
     description:
       'How MetaTrader 4 and MetaTrader 5 differ in timeframes, order types, position accounting and MQL programs, and what to check with your broker.',
     intro:
@@ -268,7 +268,7 @@ export const GUIDES: Guide[] = [
   },
   {
     slug: 'how-to-choose-a-forex-broker',
-    title: 'How to choose a forex broker: a checklist based on evidence',
+    title: 'How to choose a forex broker: an evidence checklist',
     description:
       'Check the legal entity, its register entry, account-specific costs, platforms and funding terms using primary sources rather than marketing claims.',
     intro:

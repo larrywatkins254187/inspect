@@ -301,3 +301,21 @@ describe('evidence → page vertical slice', () => {
     expect(() => db.prepare('DELETE FROM fact_observations').run()).toThrow(/immutable/);
   });
 });
+
+describe('request-scoped memoization safety', () => {
+  it('memoizes within one request only; the next request sees withdrawals and expiry', async () => {
+    const { db } = await tempDb();
+    const { publishedBroker } = await import('./helpers');
+    await publishedBroker(db, T0);
+    const req1 = { now: at(1), publicationEnabled: true };
+    const a = readProfile(db, 'example-markets', req1)!;
+    const f = db.prepare("SELECT id FROM verified_facts WHERE field_key = 'maximum_leverage'").get() as {
+      id: number;
+    };
+    withdrawFact(db, f.id, 'test', 'owner:test', at(1));
+    expect(readProfile(db, 'example-markets', req1)).toBe(a); // same request: same snapshot view
+    const b = readProfile(db, 'example-markets', { now: at(1), publicationEnabled: true })!;
+    expect(b.view.facts.some((x) => x.field === 'maximum_leverage')).toBe(false);
+    expect(readProfile(db, 'example-markets', { now: at(200), publicationEnabled: true })).toBeNull();
+  });
+});

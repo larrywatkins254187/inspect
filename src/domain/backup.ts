@@ -133,7 +133,8 @@ export async function createBackup(
       'recovery key',
     ];
     const skip = (rel: string) =>
-      /^(\.git|backups|tmp)(\/|$)/.test(rel) ||
+      /^(\.git|backups|tmp|\.next-[^/]+|reports\/raw)(\/|$)/.test(rel) ||
+      /^data\/(e2e|preview)/.test(rel) ||
       /^\.next\/cache(\/|$)/.test(rel) ||
       (!o.includeDependencies && /(^|\/)node_modules(\/|$)/.test(rel)) ||
       /^data\/.*\.sqlite(-wal|-shm)?$/.test(rel) ||

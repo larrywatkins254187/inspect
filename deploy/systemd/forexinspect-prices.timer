@@ -1,0 +1,11 @@
+[Unit]
+Description=ForexInspect reference-rate refresh (ECB via Frankfurter) schedule
+
+[Timer]
+OnCalendar=*:0/10
+
+Persistent=true
+Unit=forexinspect-prices.service
+
+[Install]
+WantedBy=timers.target

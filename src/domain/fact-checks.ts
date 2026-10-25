@@ -1,4 +1,4 @@
-import type { DB } from '@/db/client';
+import { stmt, type DB } from '@/db/client';
 import { currentPolicy, evaluateUse, getSource, type PolicyRow, type SourceRow } from './policy';
 import type { FieldKey } from './fields';
 import type { Scope } from './scope';
@@ -79,18 +79,18 @@ export function checkFacts(
   facts: Pick<SnapshotFact, 'factId' | 'normalizedValue' | 'unit' | 'currency' | 'scopeKey'>[],
   now: Date,
 ): Map<number, FactCheck> {
-  const stmt = db.prepare(FACT_SQL);
+  const factStmt = stmt(db, FACT_SQL);
   const policyMemo = new Map<number, { source: SourceRow | null; policy: PolicyRow | null }>();
   const out = new Map<number, FactCheck>();
   for (const sf of facts) {
     const reasons: string[] = [];
-    let row = stmt.get(sf.factId) as FactRow | undefined;
+    let row = factStmt.get(sf.factId) as FactRow | undefined;
     if (!row) {
       out.set(sf.factId, { valid: false, reasons: ['FACT_MISSING'], head: null });
       continue;
     }
     for (let hops = 0; row.superseded_by && hops < 50; hops++) {
-      const next = stmt.get(row.superseded_by) as FactRow | undefined;
+      const next = factStmt.get(row.superseded_by) as FactRow | undefined;
       if (!next) break;
       row = next;
     }

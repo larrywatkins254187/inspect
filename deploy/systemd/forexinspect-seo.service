@@ -1,0 +1,15 @@
+[Unit]
+Description=ForexInspect SEO crawl/check (read-only)
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=forexinspect
+Group=forexinspect
+WorkingDirectory=/opt/forexinspect/current
+Environment=FOREXINSPECT_SECRETS_FILE=/etc/forexinspect/production.env
+ExecStart=/usr/bin/env pnpm cli seo-crawl --origin http://127.0.0.1:3417
+TimeoutStartSec=1800
+NoNewPrivileges=true
+PrivateTmp=true
+Nice=10

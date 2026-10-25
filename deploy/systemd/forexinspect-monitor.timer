@@ -1,0 +1,11 @@
+[Unit]
+Description=ForexInspect monitor and alerts schedule
+
+[Timer]
+OnCalendar=hourly
+
+Persistent=true
+Unit=forexinspect-monitor.service
+
+[Install]
+WantedBy=timers.target

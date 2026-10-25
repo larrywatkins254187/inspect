@@ -1,0 +1,11 @@
+[Unit]
+Description=ForexInspect encrypted recovery backup schedule
+
+[Timer]
+OnCalendar=*-*-* 07:00:00 UTC
+RandomizedDelaySec=600
+Persistent=true
+Unit=forexinspect-backup.service
+
+[Install]
+WantedBy=timers.target

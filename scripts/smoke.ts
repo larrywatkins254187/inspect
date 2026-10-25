@@ -175,6 +175,71 @@ for (const p of ['/admin', '/admin/assets', '/preview', '/preview/brokers/exampl
 }
 const bearer = await get(`${MAIN}/admin`, { headers: { authorization: 'Bearer guess' } });
 check(M, '/admin with wrong bearer → 404', bearer.status === 404);
+const adminToken = process.env.SMOKE_ADMIN_TOKEN;
+if (adminToken) {
+  const authed = await get(`${MAIN}/admin`, { headers: { authorization: `Bearer ${adminToken}` } });
+  check(
+    M,
+    '/admin with valid bearer → 200, noindex, no-store',
+    authed.status === 200 &&
+      /noindex/.test(authed.headers.get('x-robots-tag') ?? '') &&
+      /no-store/.test(authed.headers.get('cache-control') ?? '') &&
+      authed.html.includes('Five-brand pilot'),
+    String(authed.status),
+  );
+  const prev = await get(`${MAIN}/preview/brokers/example-markets-fixture`, {
+    headers: { authorization: `Bearer ${adminToken}` },
+  });
+  check(
+    M,
+    'authenticated synthetic preview renders through the profile template',
+    prev.status === 200 &&
+      prev.html.includes('Synthetic preview') &&
+      prev.html.includes('Example Markets (fixture)') &&
+      /noindex/.test(robots(prev.html) ?? ''),
+    String(prev.status),
+  );
+  const assets = await get(`${MAIN}/admin/assets?q=pepper`, {
+    headers: { authorization: `Bearer ${adminToken}` },
+  });
+  check(
+    M,
+    'asset audit lists text-fallback state',
+    assets.status === 200 && assets.html.includes('Pepperstone') && assets.html.includes('NO_RECORD'),
+    String(assets.status),
+  );
+  const login = await get(`${MAIN}/admin/login`);
+  check(
+    M,
+    'login page exists only when ADMIN_TOKEN configured, noindex',
+    login.status === 200 && /noindex/.test(robots(login.html) ?? ''),
+  );
+  const csrf = await get(`${MAIN}/admin/session`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded', origin: 'https://evil.example' },
+    body: `token=${adminToken}`,
+  });
+  check(M, 'cross-origin login POST rejected (CSRF)', csrf.status === 404 && !csrf.headers.get('set-cookie'));
+  const ok = await get(`${MAIN}/admin/session`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded', origin: MAIN },
+    body: `token=${encodeURIComponent(adminToken)}`,
+  });
+  const cookie = ok.headers.get('set-cookie') ?? '';
+  check(
+    M,
+    'same-origin login sets HttpOnly SameSite=Strict session',
+    ok.status === 303 && /HttpOnly/.test(cookie) && /SameSite=Strict/.test(cookie),
+  );
+  const viaCookie = await get(`${MAIN}/admin`, { headers: { cookie: cookie.split(';')[0]! } });
+  check(M, 'session cookie authorizes admin', viaCookie.status === 200);
+  check(
+    M,
+    'public pages never show synthetic fixtures',
+    !(await get(`${MAIN}/brokers`)).html.includes('fixture') &&
+      !(await get(`${MAIN}/sitemap.xml`)).html.includes('fixture'),
+  );
+}
 const ask = await get(`${MAIN}/api/ask`, {
   method: 'POST',
   headers: { 'content-type': 'application/json' },

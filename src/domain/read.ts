@@ -1,5 +1,5 @@
 import type { DB } from '@/db/client';
-import { databaseReady } from '@/db/client';
+import { databaseReady, stmt } from '@/db/client';
 import {
   buildAccountsView,
   buildFeesView,
@@ -18,6 +18,19 @@ export interface ReadOptions {
   publicationEnabled: boolean;
   /** Authenticated previews only: allow synthetic fixture pages. */
   includeSynthetic?: boolean;
+}
+
+/**
+ * Request-scoped memoization keyed by the ReadOptions object. Public requests share one
+ * ReadOptions per request (React cache), so each read check runs once per request; nothing is
+ * cached across requests, so expiry/withdrawal/policy changes apply on the very next request.
+ */
+const memoStore = new WeakMap<ReadOptions, Map<string, unknown>>();
+export function memo<T>(opts: ReadOptions, key: string, fn: () => T): T {
+  let m = memoStore.get(opts);
+  if (!m) memoStore.set(opts, (m = new Map()));
+  if (!m.has(key)) m.set(key, fn());
+  return m.get(key) as T;
 }
 
 export interface PageDates {
@@ -41,7 +54,7 @@ function loadPage(
 ): { page: PageRow; revision: RevisionRow; snapshot: BrokerSnapshot } | null {
   if (!databaseReady(db)) return null;
   if (!opts.publicationEnabled && !opts.includeSynthetic) return null;
-  const page = db.prepare("SELECT * FROM content_pages WHERE path = ? AND state = 'PUBLISHED'").get(path) as
+  const page = stmt(db, "SELECT * FROM content_pages WHERE path = ? AND state = 'PUBLISHED'").get(path) as
     PageRow | undefined;
   if (!page || !page.current_revision_id) return null;
   if (page.synthetic && !opts.includeSynthetic) return null;
@@ -49,7 +62,7 @@ function loadPage(
   const revision = getRevision(db, page.current_revision_id);
   if (!revision || revision.status !== 'PUBLISHED') return null;
   if (page.broker_id) {
-    const b = db.prepare('SELECT status FROM brokers WHERE id = ?').get(page.broker_id) as
+    const b = stmt(db, 'SELECT status FROM brokers WHERE id = ?').get(page.broker_id) as
       { status: string } | undefined;
     if (!b || b.status === 'DROPPED') return null;
   }
@@ -59,11 +72,11 @@ function loadPage(
 const lastVerified = (facts: { verifiedAt: string }[]) =>
   facts.reduce<string | null>((m, f) => (!m || f.verifiedAt > m ? f.verifiedAt : m), null);
 
-export function readProfile(
-  db: DB,
-  slug: string,
-  opts: ReadOptions,
-): (Published<ProfileView> & { history: { entries: HistoryEntry[]; total: number } }) | null {
+type ProfileRead = (Published<ProfileView> & { history: { entries: HistoryEntry[]; total: number } }) | null;
+export function readProfile(db: DB, slug: string, opts: ReadOptions): ProfileRead {
+  return memo(opts, `profile:${slug}`, () => readProfileUncached(db, slug, opts));
+}
+function readProfileUncached(db: DB, slug: string, opts: ReadOptions): ProfileRead {
   const p = loadPage(db, `/brokers/${slug}`, opts);
   if (!p || p.snapshot.kind !== 'BROKER_PROFILE') return null;
   const view = buildProfileView(p.snapshot, checkFacts(db, p.snapshot.facts, opts.now));
@@ -83,6 +96,9 @@ export function readProfile(
 }
 
 export function readFees(db: DB, slug: string, opts: ReadOptions): Published<FeesView> | null {
+  return memo(opts, `fees:${slug}`, () => readFeesUncached(db, slug, opts));
+}
+function readFeesUncached(db: DB, slug: string, opts: ReadOptions): Published<FeesView> | null {
   if (!readProfile(db, slug, opts)) return null;
   const p = loadPage(db, `/brokers/${slug}/fees`, opts);
   if (!p || p.snapshot.kind !== 'BROKER_FEES') return null;
@@ -102,6 +118,9 @@ export function readFees(db: DB, slug: string, opts: ReadOptions): Published<Fee
 }
 
 export function readAccounts(db: DB, slug: string, opts: ReadOptions): Published<AccountsView> | null {
+  return memo(opts, `accounts:${slug}`, () => readAccountsUncached(db, slug, opts));
+}
+function readAccountsUncached(db: DB, slug: string, opts: ReadOptions): Published<AccountsView> | null {
   if (!readProfile(db, slug, opts)) return null;
   const p = loadPage(db, `/brokers/${slug}/accounts`, opts);
   if (!p || p.snapshot.kind !== 'BROKER_ACCOUNTS') return null;
@@ -143,6 +162,9 @@ export interface DirectoryEntry {
 
 /** Alphabetical directory of currently readable profiles. */
 export function readDirectory(db: DB, opts: ReadOptions): DirectoryEntry[] {
+  return memo(opts, 'directory', () => readDirectoryUncached(db, opts));
+}
+function readDirectoryUncached(db: DB, opts: ReadOptions): DirectoryEntry[] {
   if (!databaseReady(db) || (!opts.publicationEnabled && !opts.includeSynthetic)) return [];
   const rows = db
     .prepare(

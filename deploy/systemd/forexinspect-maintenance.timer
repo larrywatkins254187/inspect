@@ -1,0 +1,11 @@
+[Unit]
+Description=ForexInspect maintenance (Ask 30-day purge, run-log pruning, WAL checkpoint) schedule
+
+[Timer]
+OnCalendar=*-*-* 04:50:00 UTC
+
+Persistent=true
+Unit=forexinspect-maintenance.service
+
+[Install]
+WantedBy=timers.target

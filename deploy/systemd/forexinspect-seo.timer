@@ -1,0 +1,11 @@
+[Unit]
+Description=ForexInspect SEO crawl/check (read-only) schedule
+
+[Timer]
+OnCalendar=*-*-* 00,06,12,18:40:00 UTC
+
+Persistent=true
+Unit=forexinspect-seo.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=ForexInspect comparison slot job schedule
+
+[Timer]
+OnCalendar=*-*-* 00,04,08,12,16,20:25:00 UTC
+
+Persistent=true
+Unit=forexinspect-compare.service
+
+[Install]
+WantedBy=timers.target

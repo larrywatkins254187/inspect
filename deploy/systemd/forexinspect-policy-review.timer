@@ -1,0 +1,11 @@
+[Unit]
+Description=ForexInspect daily source policy/robots review schedule
+
+[Timer]
+OnCalendar=*-*-* 02:10:00 UTC
+RandomizedDelaySec=300
+Persistent=true
+Unit=forexinspect-policy-review.service
+
+[Install]
+WantedBy=timers.target

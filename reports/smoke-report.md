@@ -1,8 +1,8 @@
 # HTTP smoke and acceptance report
 
-Generated 2026-10-25T22:28:56.634Z. Main: `http://127.0.0.1:3417` (safe base: publication/integrations off). E2E: `http://127.0.0.1:3418` (isolated synthetic fixture database, publication on; fictional brokers, never production).
+Generated 2026-10-25T22:45:48.708Z. Main: `http://127.0.0.1:3417` (safe base: publication/integrations off). E2E: `http://127.0.0.1:3418` (isolated synthetic fixture database, publication on; fictional brokers, never production).
 
-**547 / 547 checks passed.**
+**555 / 555 checks passed.**
 
 ## main (publication off)
 
@@ -301,7 +301,7 @@ Generated 2026-10-25T22:28:56.634Z. Main: `http://127.0.0.1:3417` (safe base: pu
 | /tools/break-even-calculator og/twitter | PASS |  |
 | /guides → 200 | PASS | got 200 |
 | /guides one h1 | PASS | 1 h1 |
-| /guides title | PASS | Forex guides: pips, leverage, MT4 vs MT5 and choosing a broker \| ForexInspect |
+| /guides title | PASS | Forex guides: pips, leverage, MT4 vs MT5 \| ForexInspect |
 | /guides canonical self (https) | PASS | https://forexinspect.com/guides |
 | /guides main before footer | PASS |  |
 | /guides JSON-LD parses | PASS | BreadcrumbList |
@@ -334,7 +334,7 @@ Generated 2026-10-25T22:28:56.634Z. Main: `http://127.0.0.1:3417` (safe base: pu
 | /guides/forex-leverage-and-margin-explained og/twitter | PASS |  |
 | /guides/mt4-vs-mt5 → 200 | PASS | got 200 |
 | /guides/mt4-vs-mt5 one h1 | PASS | 1 h1 |
-| /guides/mt4-vs-mt5 title | PASS | MT4 vs MT5: differences between MetaTrader 4 and MetaTrader 5 \| ForexInspect |
+| /guides/mt4-vs-mt5 title | PASS | MT4 vs MT5: differences between MetaTrader 4 and 5 \| ForexInspect |
 | /guides/mt4-vs-mt5 canonical self (https) | PASS | https://forexinspect.com/guides/mt4-vs-mt5 |
 | /guides/mt4-vs-mt5 main before footer | PASS |  |
 | /guides/mt4-vs-mt5 JSON-LD parses | PASS | BreadcrumbList, Article |
@@ -346,7 +346,7 @@ Generated 2026-10-25T22:28:56.634Z. Main: `http://127.0.0.1:3417` (safe base: pu
 | /guides/mt4-vs-mt5 og/twitter | PASS |  |
 | /guides/how-to-choose-a-forex-broker → 200 | PASS | got 200 |
 | /guides/how-to-choose-a-forex-broker one h1 | PASS | 1 h1 |
-| /guides/how-to-choose-a-forex-broker title | PASS | How to choose a forex broker: a checklist based on evidence \| ForexInspect |
+| /guides/how-to-choose-a-forex-broker title | PASS | How to choose a forex broker: an evidence checklist \| ForexInspect |
 | /guides/how-to-choose-a-forex-broker canonical self (https) | PASS | https://forexinspect.com/guides/how-to-choose-a-forex-broker |
 | /guides/how-to-choose-a-forex-broker main before footer | PASS |  |
 | /guides/how-to-choose-a-forex-broker JSON-LD parses | PASS | BreadcrumbList, Article |
@@ -452,6 +452,14 @@ Generated 2026-10-25T22:28:56.634Z. Main: `http://127.0.0.1:3417` (safe base: pu
 | /preview unauthorized → 404 noindex no-store | PASS | 404 noindex, nofollow no-store |
 | /preview/brokers/example-markets-fixture unauthorized → 404 noindex no-store | PASS | 404 noindex, nofollow no-store |
 | /admin with wrong bearer → 404 | PASS |  |
+| /admin with valid bearer → 200, noindex, no-store | PASS | 200 |
+| authenticated synthetic preview renders through the profile template | PASS | 200 |
+| asset audit lists text-fallback state | PASS | 200 |
+| login page exists only when ADMIN_TOKEN configured, noindex | PASS |  |
+| cross-origin login POST rejected (CSRF) | PASS |  |
+| same-origin login sets HttpOnly SameSite=Strict session | PASS |  |
+| session cookie authorizes admin | PASS |  |
+| public pages never show synthetic fixtures | PASS |  |
 | POST /api/ask with gates off → 404 no-store | PASS | 404 |
 | /api/reference-rates dated, no-store | PASS | {"date":"2026-10-23","fetchedAt":"2026-10-25T22:15:27.259Z","eurRates":{"USD":"1 |
 | /health ok, no-store, publication off | PASS |  |
@@ -467,7 +475,7 @@ Generated 2026-10-25T22:28:56.634Z. Main: `http://127.0.0.1:3417` (safe base: pu
 | --- | --- | --- |
 | /brokers/alpha-fixture-markets → 200 | PASS | got 200 |
 | /brokers/alpha-fixture-markets one h1 | PASS | 1 h1 |
-| /brokers/alpha-fixture-markets title | PASS | Alpha Fixture Markets: verified account, cost and company evidence \| ForexInspect |
+| /brokers/alpha-fixture-markets title | PASS | Alpha Fixture Markets: verified broker evidence \| ForexInspect |
 | /brokers/alpha-fixture-markets canonical self (https) | PASS | https://forexinspect.com/brokers/alpha-fixture-markets |
 | /brokers/alpha-fixture-markets main before footer | PASS |  |
 | /brokers/alpha-fixture-markets JSON-LD parses | PASS | BreadcrumbList, Article |
@@ -488,7 +496,7 @@ Generated 2026-10-25T22:28:56.634Z. Main: `http://127.0.0.1:3417` (safe base: pu
 | profile shows distinct observed/verified/re-check dates | PASS |  |
 | /brokers/alpha-fixture-markets/fees → 200 | PASS | got 200 |
 | /brokers/alpha-fixture-markets/fees one h1 | PASS | 1 h1 |
-| /brokers/alpha-fixture-markets/fees title | PASS | Alpha Fixture Markets spreads and commissions (verified) \| ForexInspect |
+| /brokers/alpha-fixture-markets/fees title | PASS | Alpha Fixture Markets spreads and commissions \| ForexInspect |
 | /brokers/alpha-fixture-markets/fees canonical self (https) | PASS | https://forexinspect.com/brokers/alpha-fixture-markets/fees |
 | /brokers/alpha-fixture-markets/fees main before footer | PASS |  |
 | /brokers/alpha-fixture-markets/fees JSON-LD parses | PASS | BreadcrumbList |
@@ -500,7 +508,7 @@ Generated 2026-10-25T22:28:56.634Z. Main: `http://127.0.0.1:3417` (safe base: pu
 | /brokers/alpha-fixture-markets/fees og/twitter | PASS |  |
 | /brokers/alpha-fixture-markets/accounts → 200 | PASS | got 200 |
 | /brokers/alpha-fixture-markets/accounts one h1 | PASS | 1 h1 |
-| /brokers/alpha-fixture-markets/accounts title | PASS | Alpha Fixture Markets account types compared (verified) \| ForexInspect |
+| /brokers/alpha-fixture-markets/accounts title | PASS | Alpha Fixture Markets account types compared \| ForexInspect |
 | /brokers/alpha-fixture-markets/accounts canonical self (https) | PASS | https://forexinspect.com/brokers/alpha-fixture-markets/accounts |
 | /brokers/alpha-fixture-markets/accounts main before footer | PASS |  |
 | /brokers/alpha-fixture-markets/accounts JSON-LD parses | PASS | BreadcrumbList |
@@ -524,7 +532,7 @@ Generated 2026-10-25T22:28:56.634Z. Main: `http://127.0.0.1:3417` (safe base: pu
 | directory ItemList order = visible alphabetical order | PASS |  |
 | /compare/alpha-fixture-markets-vs-beta-fixture-markets → 200 | PASS | got 200 |
 | /compare/alpha-fixture-markets-vs-beta-fixture-markets one h1 | PASS | 1 h1 |
-| /compare/alpha-fixture-markets-vs-beta-fixture-markets title | PASS | Alpha Fixture Markets vs Beta Fixture Markets: verified evidence side by side \| ForexInspect |
+| /compare/alpha-fixture-markets-vs-beta-fixture-markets title | PASS | Alpha Fixture Markets vs Beta Fixture Markets: verified evidence \| ForexInspect |
 | /compare/alpha-fixture-markets-vs-beta-fixture-markets canonical self (https) | PASS | https://forexinspect.com/compare/alpha-fixture-markets-vs-beta-fixture-markets |
 | /compare/alpha-fixture-markets-vs-beta-fixture-markets main before footer | PASS |  |
 | /compare/alpha-fixture-markets-vs-beta-fixture-markets JSON-LD parses | PASS | BreadcrumbList, Article |

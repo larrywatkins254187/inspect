@@ -31,7 +31,10 @@ for (const f of src.filter((x) => /\.(ts|tsx)$/.test(x))) {
   if (/\beval\(|new Function\(/.test(t)) problems.push(`${rel}: eval/new Function`);
   if (/source\s+\/etc\/forexinspect|\.\s+\/etc\/forexinspect/.test(t))
     problems.push(`${rel}: shell-sources the secrets file`);
-  if (t.includes('dangerouslySetInnerHTML') && !/src\/ui\/primitives\.tsx|app\/layout\.tsx/.test(rel))
+  if (
+    t.includes('dangerouslySetInnerHTML') &&
+    !/src\/ui\/primitives\.tsx|app\/layout\.tsx|scripts\/security-scan\.ts/.test(rel)
+  )
     problems.push(`${rel}: dangerouslySetInnerHTML outside audited helpers`);
   if (/['"]use client['"]/.test(t) && /from ['"]@\/(db|server|domain\/(?!.*-client))/.test(t))
     problems.push(`${rel}: client component imports server modules`);

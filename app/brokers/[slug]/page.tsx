@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!p) return { title: 'Broker not found', robots: { index: false, follow: true } };
   const covered = p.view.coverage.filter((c) => c.covered).map((c) => c.label.toLowerCase());
   return pageMetadata({
-    title: `${p.view.broker.name}: verified account, cost and company evidence`,
+    title: `${p.view.broker.name}: verified broker evidence`,
     description:
       `Dated, source-checked facts for ${p.view.broker.name}${covered.length ? ` covering ${covered.slice(0, 4).join(', ')}` : ''}, with scope, official sources and what is not verified.`.slice(
         0,

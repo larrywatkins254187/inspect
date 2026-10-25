@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = pageMetadata({
   title: 'ForexInspect — evidence-first forex broker research',
   description:
-    'Check what forex brokers state about deposits, spreads, commissions, leverage, accounts and the companies behind them, with dated official sources. No ratings or affiliate links.',
+    'Check what forex brokers state about deposits, spreads, commissions, leverage, accounts and companies, with dated official sources. No ratings or affiliate links.',
   path: '/',
 });
 

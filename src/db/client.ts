@@ -39,3 +39,13 @@ export function databaseReady(db: DB): boolean {
     return false;
   }
 }
+
+const stmtCache = new WeakMap<DB, Map<string, Database.Statement>>();
+/** Prepared-statement cache per connection for hot read paths (compiled once, reused). */
+export function stmt(db: DB, sql: string): Database.Statement {
+  let m = stmtCache.get(db);
+  if (!m) stmtCache.set(db, (m = new Map()));
+  let s = m.get(sql);
+  if (!s) m.set(sql, (s = db.prepare(sql)));
+  return s;
+}

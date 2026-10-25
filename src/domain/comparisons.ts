@@ -18,7 +18,7 @@ import {
   type CitingContent,
   type PageRow,
 } from './publication';
-import { readProfile, type ReadOptions } from './read';
+import { memo, readProfile, type ReadOptions } from './read';
 
 export const COMPARE_PROMPT_VERSION = 'compare-plan-v2';
 export const COMPARE_LEASE_MS = 45 * 60_000;
@@ -51,6 +51,9 @@ export interface Participant {
 
 /** Eligibility of one broker for comparison (PRD §6 rule 1). */
 export function participantFor(db: DB, slug: string, opts: ReadOptions): Participant | null {
+  return memo(opts, `participant:${slug}`, () => participantUncached(db, slug, opts));
+}
+function participantUncached(db: DB, slug: string, opts: ReadOptions): Participant | null {
   const prof = readProfile(db, slug, opts);
   if (!prof) return null;
   const facts = prof.view.facts;
