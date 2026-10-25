@@ -1,6 +1,6 @@
 # Browser verification report
 
-Generated 2026-10-25T22:28:14.910Z with Playwright Chromium and axe-core 4.14 (WCAG 2.0/2.1/2.2 A/AA + best-practice rules). Main `http://127.0.0.1:3417`, e2e synthetic `http://127.0.0.1:3418`, consent build `http://127.0.0.1:3419`.
+Generated 2026-10-25T23:04:26.465Z with Playwright Chromium and axe-core 4.14 (WCAG 2.0/2.1/2.2 A/AA + best-practice rules). Main `http://127.0.0.1:3417`, e2e synthetic `http://127.0.0.1:3418`, consent build `http://127.0.0.1:3419`.
 
 **155 / 155 checks passed.** Automated checks do not replace manual screen-reader testing (not performed in this environment).
 
@@ -215,7 +215,7 @@ Generated 2026-10-25T22:28:14.910Z with Playwright Chromium and axe-core 4.14 (W
 
 | Check | Result | Detail |
 | --- | --- | --- |
-| only below-the-fold sections are hidden for reveal | PASS | [{"p":true,"top":1183.54541015625},{"p":true,"top":1435.82666015625},{"p":true,"top":2399.51416015625},{"p":true,"top":4013.88916015625}] |
+| only below-the-fold sections are hidden for reveal | PASS | [{"p":true,"top":1182.160400390625},{"p":true,"top":1434.441650390625},{"p":true,"top":2398.129150390625},{"p":true,"top":4012.504150390625} |
 | revealed after scrolling into view | PASS |  |
 | reduced motion: nothing hidden, no reveal work | PASS |  |
 | reduced motion: transitions effectively disabled | PASS | 1e-05s |

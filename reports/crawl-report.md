@@ -1,6 +1,6 @@
 # SEO crawl report
 
-Generated 2026-10-25T22:41:46.104Z. Crawls each instance’s own `/sitemap.xml`, fetches every listed URL without following redirects, applies the deterministic rules in `src/domain/seo-audit.ts` (status, title/description presence/length heuristics/duplicates, single self-canonical, one h1, heading order, sitemap/robots consistency, JSON-LD parse and no rating markup, Open Graph/Twitter, image alt/dimensions, lang, viewport, main-before-footer) and checks every internal link. Canonical origin: https://forexinspect.com (URLs are mapped to the local origin for fetching). Length limits are local editorial heuristics, not Google rules.
+Generated 2026-10-25T22:53:50.005Z. Crawls each instance’s own `/sitemap.xml`, fetches every listed URL without following redirects, applies the deterministic rules in `src/domain/seo-audit.ts` (status, title/description presence/length heuristics/duplicates, single self-canonical, one h1, heading order, sitemap/robots consistency, JSON-LD parse and no rating markup, Open Graph/Twitter, image alt/dimensions, lang, viewport, main-before-footer) and checks every internal link. Canonical origin: https://forexinspect.com (URLs are mapped to the local origin for fetching). Length limits are local editorial heuristics, not Google rules.
 
 ## main (publication off)
 

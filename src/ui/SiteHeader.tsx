@@ -13,9 +13,9 @@ export function SiteHeader() {
         </Link>
         <div className="header-actions">
           <HeaderNav items={PRIMARY_NAV} />
-          <Link href="/brokers#finder" className="btn btn-secondary btn-sm">
+          <Link href="/brokers#finder" className="btn btn-secondary btn-sm find-button">
             <IconSearch width={16} height={16} />
-            <span>Find a broker</span>
+            <span className="find-label">Find a broker</span>
           </Link>
         </div>
       </div>

@@ -950,6 +950,24 @@ const commands: Record<string, () => Promise<void> | void> = {
     const { integrationStatus } = await import('../src/integrations');
     print(integrationStatus(cfg));
   },
+  async correction() {
+    const pagePath = need(1, 'page-path');
+    if (!pagePath.startsWith('/')) fail('page path must start with /');
+    const summary = flag('summary') ?? fail('--summary "<public description, no reporter details>" required');
+    const actor = owner();
+    const received = flag('received-at') ?? now().toISOString();
+    const { audit } = await import('../src/domain/audit');
+    const id = Number(
+      db
+        .prepare(
+          "INSERT INTO correction_requests (page_path, received_at, status, public_summary, resolved_at, private_reference) VALUES (?, ?, 'RESOLVED_CORRECTED', ?, ?, ?)",
+        )
+        .run(pagePath, received, summary.slice(0, 300), now().toISOString(), flag('private-ref') ?? null)
+        .lastInsertRowid,
+    );
+    audit(db, { actor, action: 'correction.resolved', subject: pagePath, at: now(), detail: { id } });
+    print({ correction: id, listed: '/corrections' });
+  },
   async 'preview-seed'() {
     const { seedPreviewFixtures } = await import('../src/domain/fixtures');
     const file = path.resolve(process.env.PREVIEW_DATABASE_PATH ?? 'data/preview.sqlite');

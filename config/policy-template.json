@@ -1,0 +1,21 @@
+{
+  "use_class": "FACT_REFERENCE",
+  "owner": "<legal owner of the website, as stated on it>",
+  "official_host": "<exact host, e.g. www.example.com>",
+  "source_type": "BROKER_OFFICIAL_PAGE",
+  "terms_url": "<terms URL you reviewed>",
+  "licence_url": null,
+  "robots_agent": "ForexInspectBot",
+  "robots_path": "<path of the source page>",
+  "access_decision": "ALLOWED",
+  "reuse_decision": "UNKNOWN",
+  "commercial_decision": "UNKNOWN",
+  "derivative_decision": "UNKNOWN",
+  "attribution": null,
+  "retention": "LOCATOR_HASH_ONLY",
+  "redistribution": "NONE",
+  "credentials_required": false,
+  "terms_risk_accepted": false,
+  "adverse_findings": [],
+  "basis": "<what you reviewed, when, and why fact-reference use is acceptable>"
+}

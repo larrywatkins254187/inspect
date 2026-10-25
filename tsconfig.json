@@ -34,7 +34,9 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     ".next-consent/types/**/*.ts",
-    ".next-consent/dev/types/**/*.ts"
+    ".next-consent/dev/types/**/*.ts",
+    ".next-dev/types/**/*.ts",
+    ".next-dev/dev/types/**/*.ts"
   ],
   "exclude": ["node_modules", "workers/email/node_modules", "data", "reports"]
 }

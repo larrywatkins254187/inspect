@@ -1,6 +1,6 @@
 # Bundle report
 
-Generated 2026-10-25T22:43:06.576Z from `http://127.0.0.1:3417` (production build). Sizes are gzip level 9 of the files referenced by each route's initial HTML (framework included).
+Generated 2026-10-25T22:53:52.045Z from `http://127.0.0.1:3417` (production build). Sizes are gzip level 9 of the files referenced by each route's initial HTML (framework included).
 
 | Route | Initial JS KiB (gzip) | Budget KiB | Status | CSS KiB (gzip) | HTML KiB (gzip) | Scripts | noModule legacy KiB (not loaded by modern browsers) |
 | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |

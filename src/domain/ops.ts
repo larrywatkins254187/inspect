@@ -1,4 +1,7 @@
+import { and, count, desc, eq, gt, isNull, lte, max } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { DB } from '@/db/client';
+import * as t from '@/db/schema';
 import { addHours, utcDay } from '@/lib/time';
 
 export const PILOT_SLUGS = ['admirals', 'fp-markets', 'pepperstone', 'go-markets', 'fxpro'];
@@ -91,45 +94,75 @@ export function opsSummary(db: DB, now: Date): OpsSummary {
       blockers,
     };
   });
-  const daily = db.prepare('SELECT reserved, completed FROM chat_daily WHERE day = ?').get(utcDay(now)) as
-    { reserved: number; completed: number } | undefined;
+  // Typed operational counts via Drizzle (read-only); evidence write paths use hand-written SQL.
+  const d = drizzle(db);
+  const nowIso = now.toISOString();
+  const cnt = (q: { n: number } | undefined) => q?.n ?? 0;
+  const current = and(
+    isNull(t.verifiedFacts.supersededAt),
+    isNull(t.verifiedFacts.withdrawnAt),
+    gt(t.verifiedFacts.expiresAt, nowIso),
+  );
+  const daily = d
+    .select({ reserved: t.chatDaily.reserved, completed: t.chatDaily.completed })
+    .from(t.chatDaily)
+    .where(eq(t.chatDaily.day, utcDay(now)))
+    .get();
   return {
-    candidates: n(db, 'SELECT count(*) AS n FROM brokers'),
-    selected: n(db, "SELECT count(*) AS n FROM brokers WHERE status = 'SELECTED'"),
-    dropped: n(db, "SELECT count(*) AS n FROM brokers WHERE status = 'DROPPED'"),
-    leads: n(db, "SELECT count(*) AS n FROM broker_sources WHERE kind = 'LEAD'"),
+    candidates: cnt(d.select({ n: count() }).from(t.brokers).get()),
+    selected: cnt(d.select({ n: count() }).from(t.brokers).where(eq(t.brokers.status, 'SELECTED')).get()),
+    dropped: cnt(d.select({ n: count() }).from(t.brokers).where(eq(t.brokers.status, 'DROPPED')).get()),
+    leads: cnt(d.select({ n: count() }).from(t.brokerSources).where(eq(t.brokerSources.kind, 'LEAD')).get()),
     sourcesByState,
-    verifiedFacts: n(
-      db,
-      'SELECT count(*) AS n FROM verified_facts WHERE superseded_at IS NULL AND withdrawn_at IS NULL AND expires_at > ?',
-      now.toISOString(),
+    verifiedFacts: cnt(d.select({ n: count() }).from(t.verifiedFacts).where(current).get()),
+    expiringIn24h: cnt(
+      d
+        .select({ n: count() })
+        .from(t.verifiedFacts)
+        .where(and(current, lte(t.verifiedFacts.expiresAt, addHours(now, 24).toISOString())))
+        .get(),
     ),
-    expiringIn24h: n(
-      db,
-      'SELECT count(*) AS n FROM verified_facts WHERE superseded_at IS NULL AND withdrawn_at IS NULL AND expires_at > ? AND expires_at <= ?',
-      now.toISOString(),
-      addHours(now, 24).toISOString(),
+    openConflicts: cnt(
+      d.select({ n: count() }).from(t.factConflicts).where(isNull(t.factConflicts.resolvedAt)).get(),
     ),
-    openConflicts: n(db, 'SELECT count(*) AS n FROM fact_conflicts WHERE resolved_at IS NULL'),
-    publishedPages: n(
-      db,
-      "SELECT count(*) AS n FROM content_pages WHERE state = 'PUBLISHED' AND synthetic = 0",
+    publishedPages: cnt(
+      d
+        .select({ n: count() })
+        .from(t.contentPages)
+        .where(and(eq(t.contentPages.state, 'PUBLISHED'), eq(t.contentPages.synthetic, 0)))
+        .get(),
     ),
-    deadLetters: n(db, "SELECT count(*) AS n FROM jobs WHERE state = 'DEAD_LETTER'"),
-    alerts: db
-      .prepare(
-        'SELECT severity, code, message, count, last_seen AS lastSeen FROM operational_alerts WHERE resolved_at IS NULL ORDER BY last_seen DESC LIMIT 20',
-      )
-      .all() as OpsSummary['alerts'],
+    deadLetters: cnt(d.select({ n: count() }).from(t.jobs).where(eq(t.jobs.state, 'DEAD_LETTER')).get()),
+    alerts: d
+      .select({
+        severity: t.operationalAlerts.severity,
+        code: t.operationalAlerts.code,
+        message: t.operationalAlerts.message,
+        count: t.operationalAlerts.count,
+        lastSeen: t.operationalAlerts.lastSeen,
+      })
+      .from(t.operationalAlerts)
+      .where(isNull(t.operationalAlerts.resolvedAt))
+      .orderBy(desc(t.operationalAlerts.lastSeen))
+      .limit(20)
+      .all(),
     pilot,
-    lastRuns: db
-      .prepare(
-        'SELECT mode, outcome, started_at AS startedAt, aborted_reason AS reason FROM publication_runs ORDER BY id DESC LIMIT 10',
-      )
-      .all() as OpsSummary['lastRuns'],
+    lastRuns: d
+      .select({
+        mode: t.publicationRuns.mode,
+        outcome: t.publicationRuns.outcome,
+        startedAt: t.publicationRuns.startedAt,
+        reason: t.publicationRuns.abortedReason,
+      })
+      .from(t.publicationRuns)
+      .orderBy(desc(t.publicationRuns.id))
+      .limit(10)
+      .all(),
     askToday: { reserved: daily?.reserved ?? 0, completed: daily?.completed ?? 0 },
-    ratesLatest: (
-      db.prepare('SELECT max(effective_date) AS d FROM market_prices').get() as { d: string | null }
-    ).d,
+    ratesLatest:
+      d
+        .select({ d: max(t.marketPrices.effectiveDate) })
+        .from(t.marketPrices)
+        .get()?.d ?? null,
   };
 }

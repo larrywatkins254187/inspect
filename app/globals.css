@@ -259,6 +259,26 @@ main {
 .brand:hover {
   color: var(--text);
 }
+.brand span {
+  white-space: nowrap;
+}
+.header-actions .btn {
+  white-space: nowrap;
+}
+@media (max-width: 479px) {
+  .find-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  .find-button {
+    width: 44px;
+    padding: 0;
+  }
+}
 .brand svg {
   flex: none;
 }
@@ -733,6 +753,7 @@ a.chip:hover {
 .field {
   display: grid;
   gap: 6px;
+  align-content: start;
 }
 .field label,
 .field .label {
