@@ -81,7 +81,11 @@ export const FIXTURE_READINGS: Reading[] = [
 ];
 
 export function seedPreviewFixtures(db: DB, now: Date): { brokerId: number; published: string[] } {
-  return seedFixtureBroker(db, now, { slug: 'example-markets-fixture', name: 'Example Markets (fixture)', synthetic: true });
+  return seedFixtureBroker(db, now, {
+    slug: 'example-markets-fixture',
+    name: 'Example Markets (fixture)',
+    synthetic: true,
+  });
 }
 
 /** One fictional broker through the real pipeline. `synthetic: false` is ONLY for the isolated e2e test database. */

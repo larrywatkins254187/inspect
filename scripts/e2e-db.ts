@@ -14,7 +14,8 @@ import type { AiProvider } from '../src/ai/provider';
 
 const file = path.resolve(process.argv[2] ?? 'data/e2e.sqlite');
 const assets = path.resolve(process.env.ASSET_DIRECTORY ?? 'data/e2e-assets');
-if (file === path.resolve(process.env.DATABASE_PATH ?? 'data/forexinspect.sqlite')) throw new Error('refusing to write fixtures into the main database');
+if (file === path.resolve(process.env.DATABASE_PATH ?? 'data/forexinspect.sqlite'))
+  throw new Error('refusing to write fixtures into the main database');
 for (const f of [file, `${file}-wal`, `${file}-shm`]) fs.rmSync(f, { force: true });
 fs.rmSync(assets, { recursive: true, force: true });
 fs.mkdirSync(assets, { recursive: true });
@@ -33,7 +34,18 @@ for (const b of brokers) {
   const png = await sharp(Buffer.from(svg)).webp({ lossless: true }).toBuffer();
   const name = `${b.slug}-logo.webp`;
   fs.writeFileSync(path.join(assets, name), png);
-  db.prepare("INSERT INTO broker_assets (broker_id, file_name, sha256, mime, width, height, source_url, retrieved_at, rights_basis, attribution, current_brand_reviewed_at, approved, approved_at, created_at) VALUES (?, ?, ?, 'image/webp', 240, 96, ?, ?, 'LICENSED', 'Synthetic fixture mark', ?, 1, ?, ?)").run(r.brokerId, name, sha256(png), `https://www.${b.slug}.invalid/logo`, now.toISOString(), now.toISOString(), now.toISOString(), now.toISOString());
+  db.prepare(
+    "INSERT INTO broker_assets (broker_id, file_name, sha256, mime, width, height, source_url, retrieved_at, rights_basis, attribution, current_brand_reviewed_at, approved, approved_at, created_at) VALUES (?, ?, ?, 'image/webp', 240, 96, ?, ?, 'LICENSED', 'Synthetic fixture mark', ?, 1, ?, ?)",
+  ).run(
+    r.brokerId,
+    name,
+    sha256(png),
+    `https://www.${b.slug}.invalid/logo`,
+    now.toISOString(),
+    now.toISOString(),
+    now.toISOString(),
+    now.toISOString(),
+  );
   console.log(b.slug, r.published);
 }
 const plan: AiProvider = {
@@ -41,8 +53,17 @@ const plan: AiProvider = {
   model: 'none',
   adapterVersion: 'fixture-v1',
   availability: () => ({ ok: true }),
-  complete: async () => ({ ok: true, text: JSON.stringify({ topicOrder: ['costs', 'accounts', 'leverage', 'platforms', 'entity'], highlights: [] }), usage: { units: 0, durationMs: 0 } }),
+  complete: async () => ({
+    ok: true,
+    text: JSON.stringify({
+      topicOrder: ['costs', 'accounts', 'leverage', 'platforms', 'entity'],
+      highlights: [],
+    }),
+    usage: { units: 0, durationMs: 0 },
+  }),
 };
-console.log(await runCompareCycle(db, plan, { now, publicationEnabled: true, enabled: true, rng: () => 0.1 }));
+console.log(
+  await runCompareCycle(db, plan, { now, publicationEnabled: true, enabled: true, rng: () => 0.1 }),
+);
 db.close();
 console.log(`e2e database ready: ${file} (assets ${assets})`);

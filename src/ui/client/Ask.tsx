@@ -82,7 +82,8 @@ export function AskPanel({ siteKey }: { siteKey: string }) {
       setToken(null);
       if (widgetId.current && window.turnstile) window.turnstile.remove(widgetId.current);
       widgetId.current = null;
-      opener.current?.focus();
+      // Restore focus after the dialog closes (also covers Escape/cancel).
+      requestAnimationFrame(() => opener.current?.focus());
     };
     d.addEventListener('close', onClose);
     return () => d.removeEventListener('close', onClose);
@@ -178,13 +179,7 @@ export function AskPanel({ siteKey }: { siteKey: string }) {
         ) : null}
       </div>
       <div className="row">
-        <button
-          ref={opener}
-          type="button"
-          className="btn btn-primary"
-          onClick={open}
-          disabled={status !== 'idle'}
-        >
+        <button ref={opener} type="button" className="btn btn-primary" onClick={open}>
           Ask
         </button>
         {thread.length ? (

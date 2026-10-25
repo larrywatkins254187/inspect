@@ -28,6 +28,8 @@ const privateHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Separate output directories let verification builds (e.g. consent-enabled) coexist with the main build.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   poweredByHeader: false,
   reactStrictMode: true,
   // Always emit metadata in <head> (not streamed), for every user agent.

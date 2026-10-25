@@ -1,6 +1,6 @@
 # HTTP smoke and acceptance report
 
-Generated 2026-10-25T22:17:55.358Z. Main: `http://127.0.0.1:3417` (safe base: publication/integrations off). E2E: `http://127.0.0.1:3418` (isolated synthetic fixture database, publication on; fictional brokers, never production).
+Generated 2026-10-25T22:28:56.634Z. Main: `http://127.0.0.1:3417` (safe base: publication/integrations off). E2E: `http://127.0.0.1:3418` (isolated synthetic fixture database, publication on; fictional brokers, never production).
 
 **547 / 547 checks passed.**
 

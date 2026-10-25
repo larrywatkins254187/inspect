@@ -171,6 +171,13 @@ code {
   display: grid;
   gap: var(--space-6);
 }
+/* Grid items may shrink below their content width so wide tables scroll inside their own region. */
+.grid > *,
+.with-aside > *,
+.calc > *,
+.calc-fields > * {
+  min-width: 0;
+}
 @media (min-width: 1024px) {
   .with-aside {
     grid-template-columns: minmax(0, 1fr) 300px;
@@ -596,6 +603,7 @@ a.card-link .card-title {
 
 /* Tables */
 .table-scroll {
+  position: relative; /* contains the visually-hidden label so it cannot overflow the page */
   overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -648,6 +656,15 @@ tbody th {
 td.num,
 th.num {
   text-align: right;
+}
+/* Links inside dense tables keep a 24px minimum target (WCAG 2.5.8). */
+td a,
+th a,
+.card li > a,
+.chips a {
+  display: inline-block;
+  min-height: 24px;
+  line-height: 24px;
 }
 
 /* Facts */
