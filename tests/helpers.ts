@@ -78,7 +78,7 @@ const sc = (o: Record<string, unknown> = {}) => ({
   clientClass: null, spreadBasis: null, commissionSide: null, commissionVolume: null, ...o,
 });
 export const r = (field: string, value: string, quote: string, extra: Record<string, unknown> = {}) => ({
-  field, value, unit: null, currency: null, scope: sc((extra.scope as object) ?? {}), quote, locator: 'Account types',
+  field, value, unit: null, currency: null, scope: sc((extra.scope as Record<string, unknown>) ?? {}), quote, locator: 'Account types',
   effectiveDate: null, ...Object.fromEntries(Object.entries(extra).filter(([k]) => k !== 'scope')),
 });
 

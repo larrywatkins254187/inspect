@@ -285,7 +285,7 @@ export interface BrokerPublishReport {
 }
 
 /** Draft → QA → publish for one broker's three page kinds (manual or automatic). */
-export function publishBroker(db: DB, brokerId: number, now: Date, actor: string): BrokerPublishReport {
+export function publishBroker(db: DB, brokerId: number, now: Date, actor: string, opts: { synthetic?: boolean } = {}): BrokerPublishReport {
   const b = db.prepare('SELECT slug FROM brokers WHERE id = ?').get(brokerId) as { slug: string };
   const paths = brokerPaths(b.slug);
   const pages: BrokerPublishReport['pages'] = [];
@@ -302,7 +302,7 @@ export function publishBroker(db: DB, brokerId: number, now: Date, actor: string
       pages.push({ kind, path: paths[kind], result: 'BELOW_FLOOR', problems: [floor.reason!] });
       continue;
     }
-    const { revisionId, noop } = createDraft(db, { kind, path: paths[kind], brokerId, comparisonKey: null, content }, now);
+    const { revisionId, noop } = createDraft(db, { kind, path: paths[kind], brokerId, comparisonKey: null, content, synthetic: opts.synthetic }, now);
     if (noop) {
       const rev = getRevision(db, revisionId)!;
       if (rev.status === 'PUBLISHED') {

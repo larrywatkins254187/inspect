@@ -47,13 +47,13 @@ export function codexProvider(opts: { enabled: boolean; model: string | null; bi
         opts.model,
         '-',
       ];
-      const env: NodeJS.ProcessEnv = { PATH: process.env.PATH, HOME: process.env.HOME, LANG: 'C.UTF-8' };
+      const env: Record<string, string | undefined> = { PATH: process.env.PATH, HOME: process.env.HOME, LANG: 'C.UTF-8' };
       if (process.env.CODEX_HOME) env.CODEX_HOME = process.env.CODEX_HOME;
       try {
         const code = await new Promise<{ code: number | null; timedOut: boolean; stderr: string }>((resolve) => {
           let timedOut = false;
           let stderr = '';
-          const child = spawn(opts.bin, args, { cwd: work, env, stdio: ['pipe', 'ignore', 'pipe'] });
+          const child = spawn(opts.bin, args, { cwd: work, env: env as NodeJS.ProcessEnv, stdio: ['pipe', 'ignore', 'pipe'] });
           const timer = setTimeout(() => {
             timedOut = true;
             child.kill('SIGKILL');
