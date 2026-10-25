@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 
-export const sha256 = (data: string | Buffer): string => crypto.createHash('sha256').update(data).digest('hex');
+export const sha256 = (data: string | Buffer): string =>
+  crypto.createHash('sha256').update(data).digest('hex');
 
 /** Stable JSON: object keys sorted recursively, so hashes do not depend on insertion order. */
 export function stableJson(value: unknown): string {

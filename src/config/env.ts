@@ -64,7 +64,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     publicationEnabled: flag(env, 'PUBLICATION_ENABLED'),
     autoPublicationEnabled: flag(env, 'AUTO_PUBLICATION_ENABLED'),
     secretsRotationConfirmed: flag(env, 'SECRETS_ROTATION_CONFIRMED'),
-    codex: { enabled: flag(env, 'CODEX_ENABLED'), model: read(env, 'CODEX_MODEL'), bin: read(env, 'CODEX_BIN') ?? 'codex' },
+    codex: {
+      enabled: flag(env, 'CODEX_ENABLED'),
+      model: read(env, 'CODEX_MODEL'),
+      bin: read(env, 'CODEX_BIN') ?? 'codex',
+    },
     kie: { enabled: flag(env, 'KIE_ENABLED') },
     chat: { enabled: flag(env, 'CHAT_ENABLED'), dailyCap: int(env, 'CHAT_DAILY_CREDIT_CAP', 50, 0, 10000) },
     turnstile: {

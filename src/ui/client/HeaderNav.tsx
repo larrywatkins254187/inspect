@@ -24,7 +24,12 @@ export function HeaderNav({ items }: { items: readonly NavItem[] }) {
   const button = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
 
-  useEffect(() => setOpen(false), [path]);
+  // Close the menu when the route changes (state adjusted during render, not in an effect).
+  const [lastPath, setLastPath] = useState(path);
+  if (lastPath !== path) {
+    setLastPath(path);
+    setOpen(false);
+  }
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -43,7 +48,12 @@ export function HeaderNav({ items }: { items: readonly NavItem[] }) {
       const cur = isCurrent(path, it.href);
       return (
         <li key={it.href}>
-          <Link className="nav-link" href={it.href} aria-current={cur ? 'page' : undefined} tabIndex={mobile && !open ? -1 : undefined}>
+          <Link
+            className="nav-link"
+            href={it.href}
+            aria-current={cur ? 'page' : undefined}
+            tabIndex={mobile && !open ? -1 : undefined}
+          >
             {it.label}
             <Pending />
           </Link>
@@ -67,7 +77,13 @@ export function HeaderNav({ items }: { items: readonly NavItem[] }) {
         {open ? <IconX /> : <IconMenu />}
         <span className="visually-hidden">{open ? 'Close menu' : 'Open menu'}</span>
       </button>
-      <div id="mobile-menu" ref={panel} className="mobile-panel" data-open={open ? 'true' : 'false'} style={{ position: 'absolute', left: 0, right: 0, top: '100%' }}>
+      <div
+        id="mobile-menu"
+        ref={panel}
+        className="mobile-panel"
+        data-open={open ? 'true' : 'false'}
+        style={{ position: 'absolute', left: 0, right: 0, top: '100%' }}
+      >
         <div className="container">
           <nav aria-label="Mobile">
             <ul>{links(true)}</ul>

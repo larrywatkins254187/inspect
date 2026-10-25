@@ -28,7 +28,13 @@ export interface FactCheck {
   valid: boolean;
   reasons: string[];
   /** Current head of the renewal chain, used for verification dates. */
-  head: { id: number; observationId: number; observedAt: string; acceptedAt: string; expiresAt: string } | null;
+  head: {
+    id: number;
+    observationId: number;
+    observedAt: string;
+    acceptedAt: string;
+    expiresAt: string;
+  } | null;
 }
 
 interface FactRow {
@@ -68,7 +74,11 @@ const FACT_SQL = `
  * withdrawal, open conflicts, current source policy, dropped broker and
  * renewal chains whose value changed. Policy evaluation is memoized per call.
  */
-export function checkFacts(db: DB, facts: Pick<SnapshotFact, 'factId' | 'normalizedValue' | 'unit' | 'currency' | 'scopeKey'>[], now: Date): Map<number, FactCheck> {
+export function checkFacts(
+  db: DB,
+  facts: Pick<SnapshotFact, 'factId' | 'normalizedValue' | 'unit' | 'currency' | 'scopeKey'>[],
+  now: Date,
+): Map<number, FactCheck> {
   const stmt = db.prepare(FACT_SQL);
   const policyMemo = new Map<number, { source: SourceRow | null; policy: PolicyRow | null }>();
   const out = new Map<number, FactCheck>();
@@ -85,7 +95,12 @@ export function checkFacts(db: DB, facts: Pick<SnapshotFact, 'factId' | 'normali
       row = next;
     }
     if (row.superseded_by) reasons.push('SUPERSEDED_CHAIN_TOO_LONG');
-    if (row.normalized_value !== sf.normalizedValue || row.unit !== sf.unit || row.currency !== sf.currency || row.scope_key !== sf.scopeKey)
+    if (
+      row.normalized_value !== sf.normalizedValue ||
+      row.unit !== sf.unit ||
+      row.currency !== sf.currency ||
+      row.scope_key !== sf.scopeKey
+    )
       reasons.push('VALUE_CHANGED');
     if (row.withdrawn_at) reasons.push('WITHDRAWN');
     if (new Date(row.expires_at) <= now) reasons.push('EXPIRED');
@@ -102,7 +117,13 @@ export function checkFacts(db: DB, facts: Pick<SnapshotFact, 'factId' | 'normali
     out.set(sf.factId, {
       valid: reasons.length === 0,
       reasons,
-      head: { id: row.id, observationId: row.observation_id, observedAt: row.observed_at, acceptedAt: row.accepted_at, expiresAt: row.expires_at },
+      head: {
+        id: row.id,
+        observationId: row.observation_id,
+        observedAt: row.observed_at,
+        acceptedAt: row.accepted_at,
+        expiresAt: row.expires_at,
+      },
     });
   }
   return out;

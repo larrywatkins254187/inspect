@@ -5,7 +5,14 @@ const config = [
   ...nextVitals,
   ...nextTs,
   {
-    ignores: ['.next/**', 'node_modules/**', 'data/**', 'reports/**', 'workers/email/node_modules/**', 'next-env.d.ts'],
+    ignores: [
+      '.next/**',
+      'node_modules/**',
+      'data/**',
+      'reports/**',
+      'workers/email/node_modules/**',
+      'next-env.d.ts',
+    ],
   },
   {
     rules: {

@@ -17,6 +17,16 @@ export async function GET() {
   } catch {
     db = 'error';
   }
-  const body = { status: db === 'ok' ? 'ok' : 'degraded', db, schema, publication: cfg.publicationEnabled ? 'on' : 'off', autoPublication: cfg.autoPublicationEnabled ? 'on' : 'off', time: new Date().toISOString() };
-  return Response.json(body, { status: db === 'ok' ? 200 : 503, headers: { 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
+  const body = {
+    status: db === 'ok' ? 'ok' : 'degraded',
+    db,
+    schema,
+    publication: cfg.publicationEnabled ? 'on' : 'off',
+    autoPublication: cfg.autoPublicationEnabled ? 'on' : 'off',
+    time: new Date().toISOString(),
+  };
+  return Response.json(body, {
+    status: db === 'ok' ? 200 : 503,
+    headers: { 'cache-control': 'no-store', 'x-robots-tag': 'noindex' },
+  });
 }

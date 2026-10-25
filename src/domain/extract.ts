@@ -67,7 +67,18 @@ export const extractionJsonSchema: Record<string, unknown> = {
           scope: {
             type: 'object',
             additionalProperties: false,
-            required: ['account', 'platform', 'entity', 'jurisdiction', 'instrument', 'qualifier', 'clientClass', 'spreadBasis', 'commissionSide', 'commissionVolume'],
+            required: [
+              'account',
+              'platform',
+              'entity',
+              'jurisdiction',
+              'instrument',
+              'qualifier',
+              'clientClass',
+              'spreadBasis',
+              'commissionSide',
+              'commissionVolume',
+            ],
             properties: {
               account: nullableString,
               platform: nullableString,
@@ -152,18 +163,38 @@ export async function runExtractionPass(
   pass: 'A' | 'B' | 'OPERATOR',
   now: () => Date,
 ): Promise<ExtractionRunResult> {
-  const doc = db.prepare('SELECT id, source_id, policy_id, normalized_hash, fetched_at FROM source_documents WHERE id = ?').get(documentId) as DocRow | undefined;
+  const doc = db
+    .prepare(
+      'SELECT id, source_id, policy_id, normalized_hash, fetched_at FROM source_documents WHERE id = ?',
+    )
+    .get(documentId) as DocRow | undefined;
   if (!doc) throw new Error('unknown document');
   const source = getSource(db, doc.source_id)!;
   const policy = currentPolicy(db, doc.source_id);
   const gate = evaluateUse(source, policy, 'FACT_REFERENCE', now(), 'PUBLISH');
-  if (!gate.allowed) return { documentId, pass, status: 'SKIPPED_POLICY', observations: 0, rejected: [], reasons: gate.reasons };
-  const broker = db.prepare('SELECT id, name FROM brokers WHERE id = ?').get(source.broker_id) as { id: number; name: string };
+  if (!gate.allowed)
+    return {
+      documentId,
+      pass,
+      status: 'SKIPPED_POLICY',
+      observations: 0,
+      rejected: [],
+      reasons: gate.reasons,
+    };
+  const broker = db.prepare('SELECT id, name FROM brokers WHERE id = ?').get(source.broker_id) as {
+    id: number;
+    name: string;
+  };
   const promptVersion = pass === 'OPERATOR' ? OPERATOR_PROMPT_VERSION : EXTRACT_PROMPT_VERSION;
   const already = db
-    .prepare("SELECT count(*) AS n FROM fact_observations WHERE document_id = ? AND pass_label = ? AND prompt_version = ?")
+    .prepare(
+      'SELECT count(*) AS n FROM fact_observations WHERE document_id = ? AND pass_label = ? AND prompt_version = ?',
+    )
     .get(documentId, pass, promptVersion) as { n: number };
-  const prompt = pass === 'OPERATOR' ? operatorPrompt(broker.name, documentText) : extractionPrompt(pass, broker.name, documentText);
+  const prompt =
+    pass === 'OPERATOR'
+      ? operatorPrompt(broker.name, documentText)
+      : extractionPrompt(pass, broker.name, documentText);
   const res = await runStructured(
     db,
     provider,
@@ -179,8 +210,17 @@ export async function runExtractionPass(
     },
     now,
   );
-  if (!res.ok) return { documentId, pass, status: 'PROVIDER_FAILED', observations: 0, rejected: [], reasons: [res.errorClass] };
-  if (res.reused && already.n > 0) return { documentId, pass, status: 'REUSED_NO_CHANGE', observations: 0, rejected: [] };
+  if (!res.ok)
+    return {
+      documentId,
+      pass,
+      status: 'PROVIDER_FAILED',
+      observations: 0,
+      rejected: [],
+      reasons: [res.errorClass],
+    };
+  if (res.reused && already.n > 0)
+    return { documentId, pass, status: 'REUSED_NO_CHANGE', observations: 0, rejected: [] };
   const rejected: { field: string; problems: string[] }[] = [];
   const valid: ValidatedReading[] = [];
   for (const r of res.output.readings) {
@@ -230,7 +270,9 @@ export function recordObservations(
       ai_receipt_id, validation_json, created_at)
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,?,?,?,?,?,?,?,?)`,
   );
-  const evid = db.prepare('INSERT INTO fact_evidence (observation_id, document_id, locator, quote_hash, created_at) VALUES (?,?,?,?,?)');
+  const evid = db.prepare(
+    'INSERT INTO fact_evidence (observation_id, document_id, locator, quote_hash, created_at) VALUES (?,?,?,?,?)',
+  );
   return db.transaction(() =>
     p.readings.map((r) => {
       const id = Number(

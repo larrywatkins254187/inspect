@@ -4,9 +4,18 @@ import { stableJson } from '@/lib/hash';
 /** Append-only audit event. detail must not carry secrets, raw provider bodies or PII. */
 export function audit(
   db: DB,
-  e: { actor: string; action: string; subject: string; detail?: Record<string, unknown>; at: Date; correlationId?: string },
+  e: {
+    actor: string;
+    action: string;
+    subject: string;
+    detail?: Record<string, unknown>;
+    at: Date;
+    correlationId?: string;
+  },
 ): void {
-  db.prepare('INSERT INTO audit_events (at, actor, action, subject, detail_json, correlation_id) VALUES (?, ?, ?, ?, ?, ?)').run(
+  db.prepare(
+    'INSERT INTO audit_events (at, actor, action, subject, detail_json, correlation_id) VALUES (?, ?, ?, ?, ?, ?)',
+  ).run(
     e.at.toISOString(),
     e.actor,
     e.action,
@@ -19,7 +28,13 @@ export function audit(
 /** Deduplicated operational alert keyed by fingerprint. */
 export function raiseAlert(
   db: DB,
-  a: { fingerprint: string; severity: 'INFO' | 'WARNING' | 'CRITICAL'; code: string; message: string; at: Date },
+  a: {
+    fingerprint: string;
+    severity: 'INFO' | 'WARNING' | 'CRITICAL';
+    code: string;
+    message: string;
+    at: Date;
+  },
 ): void {
   const at = a.at.toISOString();
   db.prepare(
@@ -30,5 +45,7 @@ export function raiseAlert(
 }
 
 export function resolveAlert(db: DB, fingerprint: string, at: Date): void {
-  db.prepare('UPDATE operational_alerts SET resolved_at = ? WHERE fingerprint = ? AND resolved_at IS NULL').run(at.toISOString(), fingerprint);
+  db.prepare(
+    'UPDATE operational_alerts SET resolved_at = ? WHERE fingerprint = ? AND resolved_at IS NULL',
+  ).run(at.toISOString(), fingerprint);
 }

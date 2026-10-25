@@ -10,7 +10,8 @@ export interface AiUsage {
   durationMs: number;
 }
 
-export type ProviderResult = { ok: true; text: string; usage: AiUsage } | { ok: false; errorClass: AiErrorClass; durationMs: number };
+export type ProviderResult =
+  { ok: true; text: string; usage: AiUsage } | { ok: false; errorClass: AiErrorClass; durationMs: number };
 
 export interface AiProvider {
   readonly name: string;

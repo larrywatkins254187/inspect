@@ -4,7 +4,16 @@ import { SITE_NAME } from '@/content/site';
 
 export const absolute = (path: string) => `${config().siteUrl}${path === '/' ? '' : path}`;
 
-export function pageMetadata(p: { title: string; description: string; path: string; noindex?: boolean; type?: 'website' | 'article'; image?: string; publishedTime?: string | null; modifiedTime?: string | null }): Metadata {
+export function pageMetadata(p: {
+  title: string;
+  description: string;
+  path: string;
+  noindex?: boolean;
+  type?: 'website' | 'article';
+  image?: string;
+  publishedTime?: string | null;
+  modifiedTime?: string | null;
+}): Metadata {
   const url = absolute(p.path);
   const image = p.image ?? '/opengraph-image';
   return {
@@ -31,7 +40,12 @@ export function breadcrumbLd(items: { href: string; label: string }[]) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: items.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.label, item: absolute(c.href) })),
+    itemListElement: items.map((c, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: c.label,
+      item: absolute(c.href),
+    })),
   };
 }
 

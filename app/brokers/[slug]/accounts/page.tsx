@@ -31,7 +31,12 @@ const Cell = ({ facts }: { facts: ShownFact[] | undefined }) =>
       {facts.map((f) => (
         <li key={f.factId}>
           {f.display}
-          {f.scopeNotes.filter((n) => !/^(Account|Entity|Jurisdiction):/.test(n)).length ? <span className="small muted"> ({f.scopeNotes.filter((n) => !/^(Account|Entity|Jurisdiction):/.test(n)).join('; ')})</span> : null}{' '}
+          {f.scopeNotes.filter((n) => !/^(Account|Entity|Jurisdiction):/.test(n)).length ? (
+            <span className="small muted">
+              {' '}
+              ({f.scopeNotes.filter((n) => !/^(Account|Entity|Jurisdiction):/.test(n)).join('; ')})
+            </span>
+          ) : null}{' '}
           <a className="small" href={f.sourceUrl} rel="noopener nofollow" target="_blank">
             source<span className="visually-hidden"> for fact {f.factId} (opens in a new tab)</span>
           </a>
@@ -59,7 +64,11 @@ export default async function AccountsPage({ params }: Params) {
       <Breadcrumbs items={crumbs} />
       <div className="with-aside">
         <div>
-          <PageHeader eyebrow="Accounts" title={`${v.broker.name} account types compared`} lead={`${v.accounts.length} account types recorded on ${v.broker.name}’s official pages, with every documented condition and explicit unknowns.`} />
+          <PageHeader
+            eyebrow="Accounts"
+            title={`${v.broker.name} account types compared`}
+            lead={`${v.accounts.length} account types recorded on ${v.broker.name}’s official pages, with every documented condition and explicit unknowns.`}
+          />
           <TableRegion id="acc-cap" label={`${v.broker.name} account conditions`}>
             <table>
               <caption>Conditions by account</caption>
@@ -78,7 +87,11 @@ export default async function AccountsPage({ params }: Params) {
                   <tr key={`${acc.label}|${acc.entity}|${acc.jurisdiction}`}>
                     <th scope="row">
                       {acc.label}
-                      <div className="small muted">{acc.entity || acc.jurisdiction ? [acc.entity, acc.jurisdiction].filter(Boolean).join(' · ') : 'Entity not stated'}</div>
+                      <div className="small muted">
+                        {acc.entity || acc.jurisdiction
+                          ? [acc.entity, acc.jurisdiction].filter(Boolean).join(' · ')
+                          : 'Entity not stated'}
+                      </div>
                     </th>
                     {v.conditionFields.map((c) => (
                       <td key={c.field}>
@@ -95,16 +108,23 @@ export default async function AccountsPage({ params }: Params) {
             {v.standardVsRaw.available ? (
               <>
                 <p>
-                  Both accounts are recorded for the same entity and jurisdiction. These comparable conditions differ between {v.standardVsRaw.standard} and {v.standardVsRaw.raw}:
+                  Both accounts are recorded for the same entity and jurisdiction. These comparable conditions
+                  differ between {v.standardVsRaw.standard} and {v.standardVsRaw.raw}:
                 </p>
                 <ul>
                   {v.standardVsRaw.differing.map((d) => (
                     <li key={d.field}>
-                      {d.label}: {d.standard.map((x) => x.display).join(', ')} ({v.standardVsRaw.available ? v.standardVsRaw.standard : ''}) vs {d.raw.map((x) => x.display).join(', ')} ({v.standardVsRaw.available ? v.standardVsRaw.raw : ''})
+                      {d.label}: {d.standard.map((x) => x.display).join(', ')} (
+                      {v.standardVsRaw.available ? v.standardVsRaw.standard : ''}) vs{' '}
+                      {d.raw.map((x) => x.display).join(', ')} (
+                      {v.standardVsRaw.available ? v.standardVsRaw.raw : ''})
                     </li>
                   ))}
                 </ul>
-                <p className="small muted">A lower spread with a commission is not automatically cheaper; compare using the same instrument, volume and currency.</p>
+                <p className="small muted">
+                  A lower spread with a commission is not automatically cheaper; compare using the same
+                  instrument, volume and currency.
+                </p>
               </>
             ) : (
               <p className="muted">Not shown: {v.standardVsRaw.reason}</p>
@@ -118,7 +138,15 @@ export default async function AccountsPage({ params }: Params) {
             </p>
           </section>
         </div>
-        <EvidencePanel dates={a.dates} revisionNo={a.revision.revision_no} factCount={v.accounts.reduce((n, x) => n + Object.values(x.conditions).flat().length + (x.typeFact ? 1 : 0), 0)} sourceCount={v.sources.length} />
+        <EvidencePanel
+          dates={a.dates}
+          revisionNo={a.revision.revision_no}
+          factCount={v.accounts.reduce(
+            (n, x) => n + Object.values(x.conditions).flat().length + (x.typeFact ? 1 : 0),
+            0,
+          )}
+          sourceCount={v.sources.length}
+        />
       </div>
     </div>
   );

@@ -31,7 +31,9 @@ export function getDb(): DB {
 /** Whether the schema is migrated; pages degrade to preparation state otherwise. */
 export function databaseReady(db: DB): boolean {
   try {
-    const row = db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name='schema_migrations'").get() as { n: number };
+    const row = db
+      .prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name='schema_migrations'")
+      .get() as { n: number };
     return row.n === 1;
   } catch {
     return false;

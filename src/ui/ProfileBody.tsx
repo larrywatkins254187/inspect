@@ -1,7 +1,17 @@
 import Link from 'next/link';
 import type { readProfile } from '@/domain/read';
 import { RISK_STATEMENT } from '@/content/site';
-import { EntitySection, EvidencePanel, FactCard, FaqList, GlanceCell, HistoryList, LogoOrText, SentenceText, SourceList } from './broker';
+import {
+  EntitySection,
+  EvidencePanel,
+  FactCard,
+  FaqList,
+  GlanceCell,
+  HistoryList,
+  LogoOrText,
+  SentenceText,
+  SourceList,
+} from './broker';
 import { Breadcrumbs, JsonLd, Notice, Status, TableRegion } from './primitives';
 
 export interface ProfileBodyProps {
@@ -18,7 +28,18 @@ export interface ProfileBodyProps {
 }
 
 /** Profile rendering shared by public pages and authenticated synthetic previews. */
-export function ProfileBody({ p, slug, logo, hasFees, hasAccounts, comps, related, base = '/brokers', jsonLd = [], crumbs }: ProfileBodyProps) {
+export function ProfileBody({
+  p,
+  slug,
+  logo,
+  hasFees,
+  hasAccounts,
+  comps,
+  related,
+  base = '/brokers',
+  jsonLd = [],
+  crumbs,
+}: ProfileBodyProps) {
   const v = p.view;
   const fees = hasFees;
   const accounts = hasAccounts;
@@ -36,7 +57,8 @@ export function ProfileBody({ p, slug, logo, hasFees, hasAccounts, comps, relate
               <span className="eyebrow">Broker evidence</span>
               <h1 style={{ marginBottom: 8 }}>{v.broker.name}: accounts, costs, leverage and companies</h1>
               <p className="muted small" style={{ margin: 0 }}>
-                Official website: {v.broker.officialDomain} (owner-confirmed). Facts below are restated from official pages with links; they are not an endorsement.
+                Official website: {v.broker.officialDomain} (owner-confirmed). Facts below are restated from
+                official pages with links; they are not an endorsement.
               </p>
             </div>
           </header>
@@ -48,7 +70,13 @@ export function ProfileBody({ p, slug, logo, hasFees, hasAccounts, comps, relate
             ))}
             <ul className="chips" aria-label="Core topic coverage">
               {v.coverage.map((c) => (
-                <li key={c.topic}>{c.covered ? <Status kind="ok">{c.label}</Status> : <Status kind="neutral">{c.label}: not verified</Status>}</li>
+                <li key={c.topic}>
+                  {c.covered ? (
+                    <Status kind="ok">{c.label}</Status>
+                  ) : (
+                    <Status kind="neutral">{c.label}: not verified</Status>
+                  )}
+                </li>
               ))}
             </ul>
           </section>
@@ -59,7 +87,10 @@ export function ProfileBody({ p, slug, logo, hasFees, hasAccounts, comps, relate
               <TableRegion id="glance-cap" label={`${v.broker.name} accounts at a glance`}>
                 <table>
                   <caption>
-                    Account conditions <span className="muted">— each row is one recorded account/entity/jurisdiction scope</span>
+                    Account conditions{' '}
+                    <span className="muted">
+                      — each row is one recorded account/entity/jurisdiction scope
+                    </span>
                   </caption>
                   <thead>
                     <tr>
@@ -76,13 +107,29 @@ export function ProfileBody({ p, slug, logo, hasFees, hasAccounts, comps, relate
                       <tr key={`${g.account}|${g.entity}|${g.jurisdiction}`}>
                         <th scope="row">
                           {g.account}
-                          {g.entity || g.jurisdiction ? <div className="small muted">{[g.entity, g.jurisdiction].filter(Boolean).join(' · ')}</div> : <div className="small muted">Entity not stated</div>}
+                          {g.entity || g.jurisdiction ? (
+                            <div className="small muted">
+                              {[g.entity, g.jurisdiction].filter(Boolean).join(' · ')}
+                            </div>
+                          ) : (
+                            <div className="small muted">Entity not stated</div>
+                          )}
                         </th>
-                        <td><GlanceCell cell={g.cells.minimum_deposit} /></td>
-                        <td><GlanceCell cell={g.cells.maximum_leverage} /></td>
-                        <td><GlanceCell cell={g.cells.eurusd_spread} /></td>
-                        <td><GlanceCell cell={g.cells.trading_commission} /></td>
-                        <td><GlanceCell cell={g.cells.platforms} /></td>
+                        <td>
+                          <GlanceCell cell={g.cells.minimum_deposit} />
+                        </td>
+                        <td>
+                          <GlanceCell cell={g.cells.maximum_leverage} />
+                        </td>
+                        <td>
+                          <GlanceCell cell={g.cells.eurusd_spread} />
+                        </td>
+                        <td>
+                          <GlanceCell cell={g.cells.trading_commission} />
+                        </td>
+                        <td>
+                          <GlanceCell cell={g.cells.platforms} />
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -109,7 +156,14 @@ export function ProfileBody({ p, slug, logo, hasFees, hasAccounts, comps, relate
 
           <section aria-labelledby="entity-h">
             <h2 id="entity-h">Companies, operator and licences</h2>
-            <EntitySection name={v.broker.name} named={v.namedCompanies} operators={v.operators} licences={v.licences} slug={slug} base={base} />
+            <EntitySection
+              name={v.broker.name}
+              named={v.namedCompanies}
+              operators={v.operators}
+              licences={v.licences}
+              slug={slug}
+              base={base}
+            />
           </section>
 
           {fees || accounts || comps.length ? (
@@ -139,7 +193,10 @@ export function ProfileBody({ p, slug, logo, hasFees, hasAccounts, comps, relate
             <h2 id="unknown-h">What we could not verify</h2>
             {v.unknowns.length ? (
               <>
-                <p>These fields have no accepted evidence for {v.broker.name}. That does not mean the value is zero, absent or unavailable.</p>
+                <p>
+                  These fields have no accepted evidence for {v.broker.name}. That does not mean the value is
+                  zero, absent or unavailable.
+                </p>
                 <ul className="chips">
                   {v.unknowns.map((u) => (
                     <li key={u.field} className="chip">
@@ -149,9 +206,15 @@ export function ProfileBody({ p, slug, logo, hasFees, hasAccounts, comps, relate
                 </ul>
               </>
             ) : (
-              <p>All extracted fields have at least one accepted value. Other topics (for example withdrawal fees or client protection) are outside the current extraction set.</p>
+              <p>
+                All extracted fields have at least one accepted value. Other topics (for example withdrawal
+                fees or client protection) are outside the current extraction set.
+              </p>
             )}
-            <p className="small muted">Eligibility, client protection and country availability are never inferred from a brand, locale or group list.</p>
+            <p className="small muted">
+              Eligibility, client protection and country availability are never inferred from a brand, locale
+              or group list.
+            </p>
           </section>
 
           <section aria-labelledby="faq-h">
@@ -163,7 +226,10 @@ export function ProfileBody({ p, slug, logo, hasFees, hasAccounts, comps, relate
             <h2 id="src-h">Sources and limitations</h2>
             <SourceList sources={v.sources} />
             <p className="small muted">
-              Facts are restated in our own words with a link to the official page; source text is not republished. Brokers change terms without notice: always confirm on the official page and in the account documents before acting. Found an error? See <Link href="/corrections">corrections</Link>.
+              Facts are restated in our own words with a link to the official page; source text is not
+              republished. Brokers change terms without notice: always confirm on the official page and in the
+              account documents before acting. Found an error? See{' '}
+              <Link href="/corrections">corrections</Link>.
             </p>
           </section>
 
@@ -189,7 +255,13 @@ export function ProfileBody({ p, slug, logo, hasFees, hasAccounts, comps, relate
           </Notice>
         </div>
         <div>
-          <EvidencePanel dates={p.dates} revisionNo={p.revision.revision_no} factCount={v.facts.length} sourceCount={v.sources.length} indexable={p.indexable} />
+          <EvidencePanel
+            dates={p.dates}
+            revisionNo={p.revision.revision_no}
+            factCount={v.facts.length}
+            sourceCount={v.sources.length}
+            indexable={p.indexable}
+          />
         </div>
       </div>
     </div>

@@ -31,7 +31,15 @@ export interface TransportResponse {
 export type Transport = (req: TransportRequest) => Promise<TransportResponse>;
 
 export type FetchOutcome =
-  | { kind: 'OK'; finalUrl: string; status: number; contentType: string; body: Buffer; etag: string | null; lastModified: string | null }
+  | {
+      kind: 'OK';
+      finalUrl: string;
+      status: number;
+      contentType: string;
+      body: Buffer;
+      etag: string | null;
+      lastModified: string | null;
+    }
   | { kind: 'NOT_MODIFIED'; finalUrl: string }
   | { kind: 'REFUSED'; status: number }
   | { kind: 'CHALLENGE' }
@@ -59,9 +67,21 @@ function ipv4ToInt(ip: string): number {
   return ip.split('.').reduce((acc, o) => (acc << 8) + Number(o), 0) >>> 0;
 }
 const V4_BLOCKS: [string, number][] = [
-  ['0.0.0.0', 8], ['10.0.0.0', 8], ['100.64.0.0', 10], ['127.0.0.0', 8], ['169.254.0.0', 16], ['172.16.0.0', 12],
-  ['192.0.0.0', 24], ['192.0.2.0', 24], ['192.88.99.0', 24], ['192.168.0.0', 16], ['198.18.0.0', 15],
-  ['198.51.100.0', 24], ['203.0.113.0', 24], ['224.0.0.0', 4], ['240.0.0.0', 4],
+  ['0.0.0.0', 8],
+  ['10.0.0.0', 8],
+  ['100.64.0.0', 10],
+  ['127.0.0.0', 8],
+  ['169.254.0.0', 16],
+  ['172.16.0.0', 12],
+  ['192.0.0.0', 24],
+  ['192.0.2.0', 24],
+  ['192.88.99.0', 24],
+  ['192.168.0.0', 16],
+  ['198.18.0.0', 15],
+  ['198.51.100.0', 24],
+  ['203.0.113.0', 24],
+  ['224.0.0.0', 4],
+  ['240.0.0.0', 4],
 ];
 function v4Public(ip: string): boolean {
   const n = ipv4ToInt(ip);
@@ -84,7 +104,8 @@ function expandV6(ip: string): number[] | null {
   }
   const parts = s.split('::');
   if (parts.length > 2) return null;
-  const parse = (x: string | undefined) => (x ? x.split(':').map((h) => (/^[0-9a-f]{1,4}$/.test(h) ? parseInt(h, 16) : NaN)) : []);
+  const parse = (x: string | undefined) =>
+    x ? x.split(':').map((h) => (/^[0-9a-f]{1,4}$/.test(h) ? parseInt(h, 16) : NaN)) : [];
   const h = parse(parts[0]);
   const r = parts.length === 2 ? parse(parts[1]) : [];
   const total = 8 - tail.length;
@@ -121,7 +142,10 @@ export function isPublicAddress(ip: string): boolean {
 }
 
 /** URL safety independent of DNS: https only, no credentials, default port, no IP literals. */
-export function checkUrl(raw: string, allowedHosts: ReadonlySet<string>): { ok: true; url: URL } | { ok: false; reason: string } {
+export function checkUrl(
+  raw: string,
+  allowedHosts: ReadonlySet<string>,
+): { ok: true; url: URL } | { ok: false; reason: string } {
   let url: URL;
   try {
     url = new URL(raw);
@@ -133,7 +157,12 @@ export function checkUrl(raw: string, allowedHosts: ReadonlySet<string>): { ok: 
   if (url.port && url.port !== '443') return { ok: false, reason: 'PORT_NOT_ALLOWED' };
   const host = url.hostname.toLowerCase();
   if (net.isIP(host.replace(/^\[|\]$/g, ''))) return { ok: false, reason: 'IP_LITERAL' };
-  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal'))
+  if (
+    host === 'localhost' ||
+    host.endsWith('.localhost') ||
+    host.endsWith('.local') ||
+    host.endsWith('.internal')
+  )
     return { ok: false, reason: 'LOCAL_HOSTNAME' };
   if (!allowedHosts.has(host)) return { ok: false, reason: 'HOST_NOT_APPROVED' };
   url.hash = '';
@@ -174,7 +203,8 @@ export const httpsTransport: Transport = (req) =>
         });
         const done = () => {
           const headers: Record<string, string> = {};
-          for (const [k, v] of Object.entries(res.headers)) if (typeof v === 'string') headers[k.toLowerCase()] = v;
+          for (const [k, v] of Object.entries(res.headers))
+            if (typeof v === 'string') headers[k.toLowerCase()] = v;
           resolve({ status: res.statusCode ?? 0, headers, body: Buffer.concat(chunks), truncated });
         };
         res.on('end', done);
@@ -204,7 +234,13 @@ interface HostRow {
 }
 
 /** Short transaction reserving one request slot for a host. */
-export function reserveHostSlot(db: DB, host: string, now: Date): { ok: true } | { ok: false; reason: 'SPACING' | 'DAILY_BUDGET' | 'CIRCUIT_OPEN' | 'RETRY_AFTER' | 'STOPPED' } {
+export function reserveHostSlot(
+  db: DB,
+  host: string,
+  now: Date,
+):
+  | { ok: true }
+  | { ok: false; reason: 'SPACING' | 'DAILY_BUDGET' | 'CIRCUIT_OPEN' | 'RETRY_AFTER' | 'STOPPED' } {
   return db.transaction(() => {
     const day = utcDay(now);
     let row = db.prepare('SELECT * FROM host_traffic WHERE host = ?').get(host) as HostRow | undefined;
@@ -213,41 +249,66 @@ export function reserveHostSlot(db: DB, host: string, now: Date): { ok: true } |
       row = db.prepare('SELECT * FROM host_traffic WHERE host = ?').get(host) as HostRow;
     }
     if (row.stopped_reason) return { ok: false as const, reason: 'STOPPED' as const };
-    if (row.circuit_open_until && new Date(row.circuit_open_until) > now) return { ok: false as const, reason: 'CIRCUIT_OPEN' as const };
-    if (row.retry_after_until && new Date(row.retry_after_until) > now) return { ok: false as const, reason: 'RETRY_AFTER' as const };
-    if (row.last_request_at && now.getTime() - new Date(row.last_request_at).getTime() < FETCH_LIMITS.minSpacingMs)
+    if (row.circuit_open_until && new Date(row.circuit_open_until) > now)
+      return { ok: false as const, reason: 'CIRCUIT_OPEN' as const };
+    if (row.retry_after_until && new Date(row.retry_after_until) > now)
+      return { ok: false as const, reason: 'RETRY_AFTER' as const };
+    if (
+      row.last_request_at &&
+      now.getTime() - new Date(row.last_request_at).getTime() < FETCH_LIMITS.minSpacingMs
+    )
       return { ok: false as const, reason: 'SPACING' as const };
     const count = row.day === day ? row.request_count : 0;
     if (count >= FETCH_LIMITS.dailyBudget) return { ok: false as const, reason: 'DAILY_BUDGET' as const };
-    db.prepare('UPDATE host_traffic SET day = ?, request_count = ?, last_request_at = ? WHERE host = ?').run(day, count + 1, now.toISOString(), host);
+    db.prepare('UPDATE host_traffic SET day = ?, request_count = ?, last_request_at = ? WHERE host = ?').run(
+      day,
+      count + 1,
+      now.toISOString(),
+      host,
+    );
     return { ok: true as const };
   })();
 }
 
 function recordHostResult(db: DB, host: string, outcome: FetchOutcome, now: Date): void {
-  const row = db.prepare('SELECT consecutive_failures FROM host_traffic WHERE host = ?').get(host) as { consecutive_failures: number } | undefined;
+  const row = db.prepare('SELECT consecutive_failures FROM host_traffic WHERE host = ?').get(host) as
+    { consecutive_failures: number } | undefined;
   if (!row) return;
   if (outcome.kind === 'TRANSIENT') {
     const n = row.consecutive_failures + 1;
-    const open = n >= FETCH_LIMITS.circuitFailures ? addHours(now, FETCH_LIMITS.circuitHours).toISOString() : null;
-    db.prepare('UPDATE host_traffic SET consecutive_failures = ?, circuit_open_until = coalesce(?, circuit_open_until) WHERE host = ?').run(n, open, host);
+    const open =
+      n >= FETCH_LIMITS.circuitFailures ? addHours(now, FETCH_LIMITS.circuitHours).toISOString() : null;
+    db.prepare(
+      'UPDATE host_traffic SET consecutive_failures = ?, circuit_open_until = coalesce(?, circuit_open_until) WHERE host = ?',
+    ).run(n, open, host);
   } else if (outcome.kind === 'THROTTLED') {
     const secs = Math.min(outcome.retryAfterSeconds ?? 3600, FETCH_LIMITS.maxRetryAfterSeconds);
     const n = row.consecutive_failures + 1;
-    db.prepare('UPDATE host_traffic SET retry_after_until = ?, consecutive_failures = ?, stopped_reason = ? WHERE host = ?').run(
+    db.prepare(
+      'UPDATE host_traffic SET retry_after_until = ?, consecutive_failures = ?, stopped_reason = ? WHERE host = ?',
+    ).run(
       addMs(now, secs * 1000).toISOString(),
       n,
       n >= FETCH_LIMITS.circuitFailures ? 'persistent throttling' : null,
       host,
     );
   } else if (outcome.kind === 'REFUSED' || outcome.kind === 'CHALLENGE') {
-    db.prepare('UPDATE host_traffic SET stopped_reason = ? WHERE host = ?').run(outcome.kind === 'CHALLENGE' ? 'challenge' : 'access refused', host);
+    db.prepare('UPDATE host_traffic SET stopped_reason = ? WHERE host = ?').run(
+      outcome.kind === 'CHALLENGE' ? 'challenge' : 'access refused',
+      host,
+    );
   } else {
     db.prepare('UPDATE host_traffic SET consecutive_failures = 0 WHERE host = ?').run(host);
   }
 }
 
-const CHALLENGE_MARKERS = [/cf-chl-/i, /<title>\s*just a moment/i, /attention required!? \| cloudflare/i, /g-recaptcha|h-captcha|captcha-delivery/i, /enable javascript and cookies to continue/i];
+const CHALLENGE_MARKERS = [
+  /cf-chl-/i,
+  /<title>\s*just a moment/i,
+  /attention required!? \| cloudflare/i,
+  /g-recaptcha|h-captcha|captcha-delivery/i,
+  /enable javascript and cookies to continue/i,
+];
 
 function parseRetryAfter(v: string | undefined, now: Date): number | null {
   if (!v) return null;
@@ -274,7 +335,8 @@ export async function safeFetch(
   deps: FetchDeps,
   conditional: { etag?: string | null; lastModified?: string | null } = {},
 ): Promise<FetchOutcome> {
-  if (!deps.userAgent || !/\+?https?:\/\/|@/.test(deps.userAgent)) return { kind: 'BLOCKED_URL', reason: 'USER_AGENT_MISSING_CONTACT' };
+  if (!deps.userAgent || !/\+?https?:\/\/|@/.test(deps.userAgent))
+    return { kind: 'BLOCKED_URL', reason: 'USER_AGENT_MISSING_CONTACT' };
   let current = rawUrl;
   for (let hop = 0; hop <= FETCH_LIMITS.maxRedirects; hop++) {
     const chk = checkUrl(current, deps.allowedHosts);
@@ -286,7 +348,8 @@ export async function safeFetch(
     } catch {
       return { kind: 'TRANSIENT', reason: 'NETWORK' };
     }
-    if (!addrs.length || addrs.some((a) => !isPublicAddress(a.address))) return { kind: 'BLOCKED_URL', reason: 'NON_PUBLIC_ADDRESS' };
+    if (!addrs.length || addrs.some((a) => !isPublicAddress(a.address)))
+      return { kind: 'BLOCKED_URL', reason: 'NON_PUBLIC_ADDRESS' };
     const slot = reserveHostSlot(db, url.hostname, deps.now());
     if (!slot.ok) return { kind: 'HOST_LIMIT', reason: slot.reason };
     const headers: Record<string, string> = {
@@ -298,9 +361,18 @@ export async function safeFetch(
     if (hop === 0 && conditional.lastModified) headers['if-modified-since'] = conditional.lastModified;
     let res: TransportResponse;
     try {
-      res = await deps.transport({ url, address: addrs[0]!, headers, timeoutMs: FETCH_LIMITS.timeoutMs, maxBytes: FETCH_LIMITS.maxBytes });
+      res = await deps.transport({
+        url,
+        address: addrs[0]!,
+        headers,
+        timeoutMs: FETCH_LIMITS.timeoutMs,
+        maxBytes: FETCH_LIMITS.maxBytes,
+      });
     } catch (e) {
-      const outcome: FetchOutcome = { kind: 'TRANSIENT', reason: (e as Error).message === 'TIMEOUT' ? 'TIMEOUT' : 'NETWORK' };
+      const outcome: FetchOutcome = {
+        kind: 'TRANSIENT',
+        reason: (e as Error).message === 'TIMEOUT' ? 'TIMEOUT' : 'NETWORK',
+      };
       recordHostResult(db, url.hostname, outcome, deps.now());
       return outcome;
     }
@@ -320,18 +392,25 @@ export async function safeFetch(
 function classify(res: TransportResponse, url: URL, now: Date): FetchOutcome | 'REDIRECT' {
   const ct = (res.headers['content-type'] ?? '').split(';')[0]!.trim().toLowerCase();
   const bodyHead = res.body.subarray(0, 64 * 1024).toString('utf8');
-  if (res.headers['cf-mitigated'] === 'challenge' || ((res.status === 403 || res.status === 503 || res.status === 429) && CHALLENGE_MARKERS.some((m) => m.test(bodyHead))))
+  if (
+    res.headers['cf-mitigated'] === 'challenge' ||
+    ((res.status === 403 || res.status === 503 || res.status === 429) &&
+      CHALLENGE_MARKERS.some((m) => m.test(bodyHead)))
+  )
     return { kind: 'CHALLENGE' };
   if ([301, 302, 303, 307, 308].includes(res.status)) return 'REDIRECT';
   if (res.status === 304) return { kind: 'NOT_MODIFIED', finalUrl: url.toString() };
-  if (res.status === 401 || res.status === 403 || res.status === 451) return { kind: 'REFUSED', status: res.status };
+  if (res.status === 401 || res.status === 403 || res.status === 451)
+    return { kind: 'REFUSED', status: res.status };
   if (res.status === 404 || res.status === 410) return { kind: 'UNAVAILABLE', status: res.status };
-  if (res.status === 429) return { kind: 'THROTTLED', retryAfterSeconds: parseRetryAfter(res.headers['retry-after'], now) };
+  if (res.status === 429)
+    return { kind: 'THROTTLED', retryAfterSeconds: parseRetryAfter(res.headers['retry-after'], now) };
   if (res.status >= 500) return { kind: 'TRANSIENT', reason: 'SERVER_ERROR' };
   if (res.status !== 200) return { kind: 'UNAVAILABLE', status: res.status };
   if (res.truncated) return { kind: 'TOO_LARGE' };
   if (!ALLOWED_TYPES.includes(ct)) return { kind: 'BAD_TYPE', contentType: ct };
-  if (CHALLENGE_MARKERS.some((m) => m.test(bodyHead)) && /captcha|just a moment|cf-chl-/i.test(bodyHead)) return { kind: 'CHALLENGE' };
+  if (CHALLENGE_MARKERS.some((m) => m.test(bodyHead)) && /captcha|just a moment|cf-chl-/i.test(bodyHead))
+    return { kind: 'CHALLENGE' };
   return {
     kind: 'OK',
     finalUrl: url.toString(),

@@ -40,21 +40,126 @@ export interface FieldDef {
 
 /** Mirrors migrations/0002 (a test asserts they agree). */
 export const FIELDS: Record<FieldKey, FieldDef> = {
-  account_type: { key: 'account_type', label: 'Account type', topic: 'accounts', ttlHours: 168, core: 'account_types', kind: 'text' },
-  minimum_deposit: { key: 'minimum_deposit', label: 'Minimum deposit', topic: 'accounts', ttlHours: 168, core: 'minimum_deposit', kind: 'decimal' },
-  minimum_lot_size: { key: 'minimum_lot_size', label: 'Minimum trade size', topic: 'accounts', ttlHours: 168, core: null, kind: 'decimal' },
-  demo_account: { key: 'demo_account', label: 'Demo account', topic: 'accounts', ttlHours: 720, core: null, kind: 'boolean' },
-  islamic_account: { key: 'islamic_account', label: 'Swap-free (Islamic) account', topic: 'accounts', ttlHours: 720, core: null, kind: 'boolean' },
-  eurusd_spread: { key: 'eurusd_spread', label: 'EUR/USD spread', topic: 'costs', ttlHours: 168, core: 'forex_spread', kind: 'decimal' },
-  trading_commission: { key: 'trading_commission', label: 'Trading commission', topic: 'costs', ttlHours: 168, core: 'trading_commission', kind: 'decimal' },
-  maximum_leverage: { key: 'maximum_leverage', label: 'Maximum leverage', topic: 'leverage', ttlHours: 168, core: 'maximum_leverage', kind: 'ratio' },
-  mt4_supported: { key: 'mt4_supported', label: 'MetaTrader 4', topic: 'platforms', ttlHours: 720, core: null, kind: 'boolean' },
-  mt5_supported: { key: 'mt5_supported', label: 'MetaTrader 5', topic: 'platforms', ttlHours: 720, core: null, kind: 'boolean' },
-  ctrader_supported: { key: 'ctrader_supported', label: 'cTrader', topic: 'platforms', ttlHours: 720, core: null, kind: 'boolean' },
-  tradingview_supported: { key: 'tradingview_supported', label: 'TradingView', topic: 'platforms', ttlHours: 720, core: null, kind: 'boolean' },
-  copy_trading: { key: 'copy_trading', label: 'Copy trading', topic: 'platforms', ttlHours: 720, core: null, kind: 'boolean' },
-  legal_entity_name: { key: 'legal_entity_name', label: 'Named company', topic: 'entity', ttlHours: 168, core: 'legal_entity', kind: 'entity' },
-  operating_entity: { key: 'operating_entity', label: 'Website operator', topic: 'entity', ttlHours: 168, core: 'legal_entity', kind: 'entity' },
+  account_type: {
+    key: 'account_type',
+    label: 'Account type',
+    topic: 'accounts',
+    ttlHours: 168,
+    core: 'account_types',
+    kind: 'text',
+  },
+  minimum_deposit: {
+    key: 'minimum_deposit',
+    label: 'Minimum deposit',
+    topic: 'accounts',
+    ttlHours: 168,
+    core: 'minimum_deposit',
+    kind: 'decimal',
+  },
+  minimum_lot_size: {
+    key: 'minimum_lot_size',
+    label: 'Minimum trade size',
+    topic: 'accounts',
+    ttlHours: 168,
+    core: null,
+    kind: 'decimal',
+  },
+  demo_account: {
+    key: 'demo_account',
+    label: 'Demo account',
+    topic: 'accounts',
+    ttlHours: 720,
+    core: null,
+    kind: 'boolean',
+  },
+  islamic_account: {
+    key: 'islamic_account',
+    label: 'Swap-free (Islamic) account',
+    topic: 'accounts',
+    ttlHours: 720,
+    core: null,
+    kind: 'boolean',
+  },
+  eurusd_spread: {
+    key: 'eurusd_spread',
+    label: 'EUR/USD spread',
+    topic: 'costs',
+    ttlHours: 168,
+    core: 'forex_spread',
+    kind: 'decimal',
+  },
+  trading_commission: {
+    key: 'trading_commission',
+    label: 'Trading commission',
+    topic: 'costs',
+    ttlHours: 168,
+    core: 'trading_commission',
+    kind: 'decimal',
+  },
+  maximum_leverage: {
+    key: 'maximum_leverage',
+    label: 'Maximum leverage',
+    topic: 'leverage',
+    ttlHours: 168,
+    core: 'maximum_leverage',
+    kind: 'ratio',
+  },
+  mt4_supported: {
+    key: 'mt4_supported',
+    label: 'MetaTrader 4',
+    topic: 'platforms',
+    ttlHours: 720,
+    core: null,
+    kind: 'boolean',
+  },
+  mt5_supported: {
+    key: 'mt5_supported',
+    label: 'MetaTrader 5',
+    topic: 'platforms',
+    ttlHours: 720,
+    core: null,
+    kind: 'boolean',
+  },
+  ctrader_supported: {
+    key: 'ctrader_supported',
+    label: 'cTrader',
+    topic: 'platforms',
+    ttlHours: 720,
+    core: null,
+    kind: 'boolean',
+  },
+  tradingview_supported: {
+    key: 'tradingview_supported',
+    label: 'TradingView',
+    topic: 'platforms',
+    ttlHours: 720,
+    core: null,
+    kind: 'boolean',
+  },
+  copy_trading: {
+    key: 'copy_trading',
+    label: 'Copy trading',
+    topic: 'platforms',
+    ttlHours: 720,
+    core: null,
+    kind: 'boolean',
+  },
+  legal_entity_name: {
+    key: 'legal_entity_name',
+    label: 'Named company',
+    topic: 'entity',
+    ttlHours: 168,
+    core: 'legal_entity',
+    kind: 'entity',
+  },
+  operating_entity: {
+    key: 'operating_entity',
+    label: 'Website operator',
+    topic: 'entity',
+    ttlHours: 168,
+    core: 'legal_entity',
+    kind: 'entity',
+  },
 };
 
 export const CORE_TOPICS: { key: CoreTopic; label: string }[] = [
@@ -114,8 +219,38 @@ export interface ValidatedReading {
 export type ValidationResult = { ok: true; reading: ValidatedReading } | { ok: false; problems: string[] };
 
 const ISO_CURRENCIES = new Set([
-  'USD', 'EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD', 'NZD', 'SGD', 'HKD', 'ZAR', 'SEK', 'NOK', 'DKK', 'PLN', 'CZK',
-  'HUF', 'MXN', 'AED', 'THB', 'MYR', 'IDR', 'INR', 'CNY', 'CNH', 'BRL', 'TRY', 'ILS', 'KES', 'NGN', 'PHP', 'VND',
+  'USD',
+  'EUR',
+  'GBP',
+  'JPY',
+  'CHF',
+  'AUD',
+  'CAD',
+  'NZD',
+  'SGD',
+  'HKD',
+  'ZAR',
+  'SEK',
+  'NOK',
+  'DKK',
+  'PLN',
+  'CZK',
+  'HUF',
+  'MXN',
+  'AED',
+  'THB',
+  'MYR',
+  'IDR',
+  'INR',
+  'CNY',
+  'CNH',
+  'BRL',
+  'TRY',
+  'ILS',
+  'KES',
+  'NGN',
+  'PHP',
+  'VND',
 ]);
 
 /** Unambiguous currency markers. A bare "$" is deliberately absent. */
@@ -153,14 +288,16 @@ export function numbersIn(text: string): string[] {
   const out: string[] = [];
   for (const m of text.matchAll(/\d{1,3}(?:[,   ]\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?/g)) {
     const t = m[0].replace(/[,   ]/g, '');
-    if (isDecimalString(t.replace(/^0+(?=\d)/, '') || '0')) out.push(normalizeDecimal(t.replace(/^0+(?=\d)/, '') || '0'));
+    if (isDecimalString(t.replace(/^0+(?=\d)/, '') || '0'))
+      out.push(normalizeDecimal(t.replace(/^0+(?=\d)/, '') || '0'));
   }
   return out;
 }
 
 export function currencyEvidence(quote: string): { codes: Set<string>; bareDollar: boolean } {
   const codes = new Set<string>();
-  for (const m of quote.toUpperCase().matchAll(/\b[A-Z]{3}\b/g)) if (ISO_CURRENCIES.has(m[0])) codes.add(m[0]);
+  for (const m of quote.toUpperCase().matchAll(/\b[A-Z]{3}\b/g))
+    if (ISO_CURRENCIES.has(m[0])) codes.add(m[0]);
   let stripped = quote;
   for (const [re, code] of CURRENCY_MARKERS) {
     if (re.test(stripped)) {
@@ -252,7 +389,8 @@ export function validateReading(r: Reading, documentText: string): ValidationRes
       return;
     }
     if (!ISO_CURRENCIES.has(currency)) problems.push('CURRENCY_INVALID');
-    else if (!ev.codes.has(currency)) problems.push(ev.bareDollar ? 'AMBIGUOUS_CURRENCY' : 'CURRENCY_NOT_IN_QUOTE');
+    else if (!ev.codes.has(currency))
+      problems.push(ev.bareDollar ? 'AMBIGUOUS_CURRENCY' : 'CURRENCY_NOT_IN_QUOTE');
   };
   const requireDecimal = (min: 'zero' | 'positive') => {
     if (!isDecimalString(value)) {
@@ -262,7 +400,8 @@ export function validateReading(r: Reading, documentText: string): ValidationRes
     normalizedValue = normalizeDecimal(value);
     if (normalizedValue.startsWith('-')) problems.push('VALUE_NEGATIVE');
     if (min === 'positive' && normalizedValue === '0') problems.push('VALUE_NOT_POSITIVE');
-    const zeroPhrase = normalizedValue === '0' && /\b(no minimum|zero|free|no commission|commission-free)\b/i.test(quote);
+    const zeroPhrase =
+      normalizedValue === '0' && /\b(no minimum|zero|free|no commission|commission-free)\b/i.test(quote);
     if (!nums.includes(normalizedValue) && !zeroPhrase) problems.push('VALUE_NOT_IN_QUOTE');
   };
 
@@ -285,11 +424,18 @@ export function validateReading(r: Reading, documentText: string): ValidationRes
         requireDecimal('zero');
         requireCurrency(false);
         unit = null;
-        if (scope.commissionSide === 'PER_SIDE' && !/\b(per|each)\s+side\b|\bper\s+trade\s+side\b|\bone[\s-]way\b/i.test(quote))
+        if (
+          scope.commissionSide === 'PER_SIDE' &&
+          !/\b(per|each)\s+side\b|\bper\s+trade\s+side\b|\bone[\s-]way\b/i.test(quote)
+        )
           problems.push('COMMISSION_SIDE_NOT_IN_QUOTE');
-        if (scope.commissionSide === 'ROUND_TURN' && !/\bround[\s-]?turn\b|\bround[\s-]?trip\b|\bopen and close\b/i.test(quote))
+        if (
+          scope.commissionSide === 'ROUND_TURN' &&
+          !/\bround[\s-]?turn\b|\bround[\s-]?trip\b|\bopen and close\b/i.test(quote)
+        )
           problems.push('COMMISSION_SIDE_NOT_IN_QUOTE');
-        if (scope.commissionSide && !['PER_SIDE', 'ROUND_TURN'].includes(scope.commissionSide)) problems.push('COMMISSION_SIDE_INVALID');
+        if (scope.commissionSide && !['PER_SIDE', 'ROUND_TURN'].includes(scope.commissionSide))
+          problems.push('COMMISSION_SIDE_INVALID');
         if (scope.commissionVolume && !lq.includes(scope.commissionVolume.toLowerCase()))
           problems.push('COMMISSION_VOLUME_NOT_IN_QUOTE');
       } else if (field === 'minimum_lot_size') {
@@ -345,7 +491,8 @@ export function validateReading(r: Reading, documentText: string): ValidationRes
         valueText = name;
         normalizedValue = normalizeLegalName(name);
         if (!hasLegalForm(name)) problems.push('LEGAL_FORM_MISSING');
-        if (!normalizeForLiteral(quote).includes(normalizeForLiteral(name))) problems.push('ENTITY_NOT_IN_QUOTE');
+        if (!normalizeForLiteral(quote).includes(normalizeForLiteral(name)))
+          problems.push('ENTITY_NOT_IN_QUOTE');
         if (field === 'operating_entity') {
           const hit = OPERATOR_PATTERNS.find(([re]) => re.test(quote));
           if (!hit) problems.push('OPERATOR_WORDING_MISSING');
@@ -357,7 +504,8 @@ export function validateReading(r: Reading, documentText: string): ValidationRes
       break;
     }
   }
-  if (r.effectiveDate != null && !/^\d{4}-\d{2}-\d{2}$/.test(r.effectiveDate)) problems.push('EFFECTIVE_DATE_INVALID');
+  if (r.effectiveDate != null && !/^\d{4}-\d{2}-\d{2}$/.test(r.effectiveDate))
+    problems.push('EFFECTIVE_DATE_INVALID');
   if (problems.length) return { ok: false, problems };
   return {
     ok: true,
@@ -378,7 +526,12 @@ export function validateReading(r: Reading, documentText: string): ValidationRes
 }
 
 /** Display text for a value with unit/currency, e.g. "200 USD", "0.8 pips", "1:500". */
-export function displayValue(f: { field_key: string; value_text: string; unit: string | null; currency: string | null }): string {
+export function displayValue(f: {
+  field_key: string;
+  value_text: string;
+  unit: string | null;
+  currency: string | null;
+}): string {
   const def = FIELDS[f.field_key as FieldKey];
   if (!def) return f.value_text;
   if (def.kind === 'boolean') return f.value_text === 'true' ? 'Available' : 'Not offered (stated)';

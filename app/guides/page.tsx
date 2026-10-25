@@ -6,7 +6,8 @@ import { Breadcrumbs, JsonLd, PageHeader } from '@/ui/primitives';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Forex guides: pips, leverage, MT4 vs MT5 and choosing a broker',
-  description: 'Plain-English explainers on pips, leverage and margin, MetaTrader 4 versus 5, and how to check a forex broker using primary sources.',
+  description:
+    'Plain-English explainers on pips, leverage and margin, MetaTrader 4 versus 5, and how to check a forex broker using primary sources.',
   path: '/guides',
 });
 const crumbs = [
@@ -19,7 +20,11 @@ export default function GuidesPage() {
     <div className="container">
       <JsonLd data={breadcrumbLd(crumbs)} />
       <Breadcrumbs items={crumbs} />
-      <PageHeader eyebrow="Guides" title="Forex guides" lead="General explanations of trading concepts. Guides contain no broker-specific numbers; verified broker evidence lives on the broker pages." />
+      <PageHeader
+        eyebrow="Guides"
+        title="Forex guides"
+        lead="General explanations of trading concepts. Guides contain no broker-specific numbers; verified broker evidence lives on the broker pages."
+      />
       <ul className="grid grid-2" style={{ listStyle: 'none', padding: 0 }}>
         {GUIDES.map((g) => (
           <li key={g.slug}>

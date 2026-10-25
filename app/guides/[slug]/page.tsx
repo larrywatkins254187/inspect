@@ -17,7 +17,14 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const g = guideBySlug(slug);
   if (!g) return {};
-  return pageMetadata({ title: g.title, description: g.description, path: `/guides/${slug}`, type: 'article', publishedTime: g.contentDate, modifiedTime: g.contentDate });
+  return pageMetadata({
+    title: g.title,
+    description: g.description,
+    path: `/guides/${slug}`,
+    type: 'article',
+    publishedTime: g.contentDate,
+    modifiedTime: g.contentDate,
+  });
 }
 
 function BlockView({ b, i }: { b: Block; i: string }) {
@@ -47,7 +54,15 @@ function BlockView({ b, i }: { b: Block; i: string }) {
         <tbody>
           {b.table.rows.map((r) => (
             <tr key={r.join('|')}>
-              {r.map((c, j) => (j === 0 ? <th key={j} scope="row">{c}</th> : <td key={j}>{c}</td>))}
+              {r.map((c, j) =>
+                j === 0 ? (
+                  <th key={j} scope="row">
+                    {c}
+                  </th>
+                ) : (
+                  <td key={j}>{c}</td>
+                ),
+              )}
             </tr>
           ))}
         </tbody>
@@ -68,14 +83,28 @@ export default async function GuidePage({ params }: Params) {
   return (
     <div className="container">
       <JsonLd data={breadcrumbLd(crumbs)} />
-      <JsonLd data={{ '@context': 'https://schema.org', '@type': 'Article', headline: g.title, description: g.description, url: absolute(`/guides/${slug}`), datePublished: g.contentDate, dateModified: g.contentDate, publisher: { '@type': 'Organization', name: 'ForexInspect', url: absolute('/') } }} />
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: g.title,
+          description: g.description,
+          url: absolute(`/guides/${slug}`),
+          datePublished: g.contentDate,
+          dateModified: g.contentDate,
+          publisher: { '@type': 'Organization', name: 'ForexInspect', url: absolute('/') },
+        }}
+      />
       <Breadcrumbs items={crumbs} />
       <article className="prose">
         <header className="page-header">
           <span className="eyebrow">Guide</span>
           <h1>{g.title}</h1>
           <p className="lead">{g.intro}</p>
-          <p className="small muted">Written {formatDate(g.contentDate)}. General education, not advice; no named author or expert review is claimed.</p>
+          <p className="small muted">
+            Written {formatDate(g.contentDate)}. General education, not advice; no named author or expert
+            review is claimed.
+          </p>
         </header>
         <nav className="toc panel" aria-label="On this page">
           <p style={{ fontWeight: 650, margin: '0 0 8px' }}>On this page</p>

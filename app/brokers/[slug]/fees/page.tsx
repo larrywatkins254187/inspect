@@ -41,7 +41,11 @@ export default async function FeesPage({ params }: Params) {
       <Breadcrumbs items={crumbs} />
       <div className="with-aside">
         <div>
-          <PageHeader eyebrow="Costs" title={`${v.broker.name} spreads and commissions`} lead={`Verified trading-cost statements from ${v.broker.name}’s official pages. This is partial cost evidence, not an all-in cost or a live price.`} />
+          <PageHeader
+            eyebrow="Costs"
+            title={`${v.broker.name} spreads and commissions`}
+            lead={`Verified trading-cost statements from ${v.broker.name}’s official pages. This is partial cost evidence, not an all-in cost or a live price.`}
+          />
           <section aria-labelledby="sp-h">
             <h2 id="sp-h">EUR/USD spreads</h2>
             {v.spreads.length ? (
@@ -55,7 +59,10 @@ export default async function FeesPage({ params }: Params) {
                 <NotVerified>No EUR/USD spread is verified.</NotVerified>
               </p>
             )}
-            <p className="small muted">Advertised spreads are typically minimums or averages under stated conditions. They are not executable live prices.</p>
+            <p className="small muted">
+              Advertised spreads are typically minimums or averages under stated conditions. They are not
+              executable live prices.
+            </p>
           </section>
           <section aria-labelledby="cm-h">
             <h2 id="cm-h">Commissions</h2>
@@ -64,7 +71,12 @@ export default async function FeesPage({ params }: Params) {
                 {v.commissions.map((c) => (
                   <FactCard key={c.factId} fact={c}>
                     <p className="small" style={{ margin: '8px 0 0' }}>
-                      {c.usableForCost ? <Status kind="ok">Complete cost basis</Status> : <Status kind="warn">Excluded from cost inputs</Status>} {c.exclusion ?? 'Currency, side and volume basis are all stated.'}
+                      {c.usableForCost ? (
+                        <Status kind="ok">Complete cost basis</Status>
+                      ) : (
+                        <Status kind="warn">Excluded from cost inputs</Status>
+                      )}{' '}
+                      {c.exclusion ?? 'Currency, side and volume basis are all stated.'}
                     </p>
                   </FactCard>
                 ))}
@@ -77,7 +89,10 @@ export default async function FeesPage({ params }: Params) {
           </section>
           <section aria-labelledby="uk-h">
             <h2 id="uk-h">Fees not verified</h2>
-            <p>ForexInspect has no accepted evidence for these costs. Check the broker’s fee schedule and account documents.</p>
+            <p>
+              ForexInspect has no accepted evidence for these costs. Check the broker’s fee schedule and
+              account documents.
+            </p>
             <ul>
               {v.unknownFees.map((u) => (
                 <li key={u}>
@@ -99,7 +114,10 @@ export default async function FeesPage({ params }: Params) {
                 <Link href="/tools/swap-calculator">Swap calculator</Link>
               </li>
             </ul>
-            <p className="small muted">Calculators use values you enter. Combining a spread with a commission is only meaningful for the same account, instrument and currency.</p>
+            <p className="small muted">
+              Calculators use values you enter. Combining a spread with a commission is only meaningful for
+              the same account, instrument and currency.
+            </p>
           </section>
           <section aria-labelledby="src-h">
             <h2 id="src-h">Sources</h2>
@@ -109,10 +127,18 @@ export default async function FeesPage({ params }: Params) {
             </p>
           </section>
           <Notice kind="risk">
-            <p>Costs are only part of the risk of leveraged trading. See the <Link href="/risk-disclosure">risk disclosure</Link>.</p>
+            <p>
+              Costs are only part of the risk of leveraged trading. See the{' '}
+              <Link href="/risk-disclosure">risk disclosure</Link>.
+            </p>
           </Notice>
         </div>
-        <EvidencePanel dates={f.dates} revisionNo={f.revision.revision_no} factCount={v.spreads.length + v.commissions.length} sourceCount={v.sources.length} />
+        <EvidencePanel
+          dates={f.dates}
+          revisionNo={f.revision.revision_no}
+          factCount={v.spreads.length + v.commissions.length}
+          sourceCount={v.sources.length}
+        />
       </div>
     </div>
   );

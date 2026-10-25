@@ -9,5 +9,15 @@ export async function GET() {
   const r = databaseReady(db) ? latestRates(db) : null;
   const headers = { 'cache-control': 'no-store', 'x-robots-tag': 'noindex' };
   if (!r) return Response.json({ date: null }, { status: 404, headers });
-  return Response.json({ date: r.date, fetchedAt: r.fetchedAt, eurRates: r.eurRates, attribution: ATTRIBUTION, notice: 'Daily ECB reference rates for information only; not tradable quotes. Cross rates are derived via EUR.' }, { headers });
+  return Response.json(
+    {
+      date: r.date,
+      fetchedAt: r.fetchedAt,
+      eurRates: r.eurRates,
+      attribution: ATTRIBUTION,
+      notice:
+        'Daily ECB reference rates for information only; not tradable quotes. Cross rates are derived via EUR.',
+    },
+    { headers },
+  );
 }

@@ -19,7 +19,13 @@ async function previewDb(): Promise<DB> {
   const fresh = !fs.existsSync(file);
   const db = openDatabase(file);
   await migrate(db, { snapshotDir: null });
-  const valid = !fresh && readProfile(db, 'example-markets-fixture', { now: new Date(), publicationEnabled: false, includeSynthetic: true });
+  const valid =
+    !fresh &&
+    readProfile(db, 'example-markets-fixture', {
+      now: new Date(),
+      publicationEnabled: false,
+      includeSynthetic: true,
+    });
   if (!valid) seedPreviewFixtures(db, new Date());
   return db;
 }
@@ -33,7 +39,10 @@ export default async function Preview({ params }: { params: Promise<{ path?: str
   const banner = (
     <div className="container">
       <Notice kind="warn" title="Synthetic preview — fictional data">
-        <p>This page is generated from clearly fictional fixtures in a separate preview database. It is private, noindex, and never appears in the sitemap, structured data or Ask.</p>
+        <p>
+          This page is generated from clearly fictional fixtures in a separate preview database. It is
+          private, noindex, and never appears in the sitemap, structured data or Ask.
+        </p>
       </Notice>
     </div>
   );
@@ -44,9 +53,17 @@ export default async function Preview({ params }: { params: Promise<{ path?: str
         <div className="container">
           <h1>Previews</h1>
           <ul>
-            <li><Link href="/preview/brokers/example-markets-fixture">Broker profile (fixture)</Link></li>
-            <li><Link href="/preview/brokers/example-markets-fixture/fees">Fees view summary (fixture)</Link></li>
-            <li><Link href="/preview/brokers/example-markets-fixture/accounts">Accounts view summary (fixture)</Link></li>
+            <li>
+              <Link href="/preview/brokers/example-markets-fixture">Broker profile (fixture)</Link>
+            </li>
+            <li>
+              <Link href="/preview/brokers/example-markets-fixture/fees">Fees view summary (fixture)</Link>
+            </li>
+            <li>
+              <Link href="/preview/brokers/example-markets-fixture/accounts">
+                Accounts view summary (fixture)
+              </Link>
+            </li>
           </ul>
         </div>
       </>
@@ -62,8 +79,12 @@ export default async function Preview({ params }: { params: Promise<{ path?: str
       <>
         {banner}
         <div className="container">
-          <h1>{p.view.broker.name} — {segs[2]} (preview)</h1>
-          <pre className="formula" style={{ maxHeight: 600, overflow: 'auto' }}>{JSON.stringify(v.view, null, 2)}</pre>
+          <h1>
+            {p.view.broker.name} — {segs[2]} (preview)
+          </h1>
+          <pre className="formula" style={{ maxHeight: 600, overflow: 'auto' }}>
+            {JSON.stringify(v.view, null, 2)}
+          </pre>
         </div>
       </>
     );
@@ -75,7 +96,17 @@ export default async function Preview({ params }: { params: Promise<{ path?: str
   return (
     <>
       {banner}
-      <ProfileBody p={p} slug={slug} logo={null} hasFees={!!readFees(db, slug, opts)} hasAccounts={!!readAccounts(db, slug, opts)} comps={[]} related={[]} base="/preview/brokers" crumbs={crumbs} />
+      <ProfileBody
+        p={p}
+        slug={slug}
+        logo={null}
+        hasFees={!!readFees(db, slug, opts)}
+        hasAccounts={!!readAccounts(db, slug, opts)}
+        comps={[]}
+        related={[]}
+        base="/preview/brokers"
+        crumbs={crumbs}
+      />
     </>
   );
 }

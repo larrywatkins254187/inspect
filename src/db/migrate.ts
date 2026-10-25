@@ -40,14 +40,19 @@ export async function migrate(
   db.exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
     version INTEGER PRIMARY KEY, name TEXT NOT NULL, checksum TEXT NOT NULL, applied_at TEXT NOT NULL)`);
   const applied = new Map(
-    (db.prepare('SELECT version, checksum, name FROM schema_migrations').all() as { version: number; checksum: string; name: string }[]).map(
-      (r) => [r.version, r],
-    ),
+    (
+      db.prepare('SELECT version, checksum, name FROM schema_migrations').all() as {
+        version: number;
+        checksum: string;
+        name: string;
+      }[]
+    ).map((r) => [r.version, r]),
   );
   const migrations = loadMigrations(opts.dir);
   for (const m of migrations) {
     const a = applied.get(m.version);
-    if (a && a.checksum !== m.checksum) throw new Error(`migration ${m.name} was modified after being applied`);
+    if (a && a.checksum !== m.checksum)
+      throw new Error(`migration ${m.name} was modified after being applied`);
   }
   const pending = migrations.filter((m) => !applied.has(m.version));
   let snapshot: string | null = null;
@@ -61,12 +66,9 @@ export async function migrate(
   for (const m of pending) {
     db.transaction(() => {
       db.exec(m.sql);
-      db.prepare('INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?, ?, ?, ?)').run(
-        m.version,
-        m.name,
-        m.checksum,
-        now().toISOString(),
-      );
+      db.prepare(
+        'INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (?, ?, ?, ?)',
+      ).run(m.version, m.name, m.checksum, now().toISOString());
     })();
     out.push(m.name);
   }

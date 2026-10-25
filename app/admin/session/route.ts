@@ -7,7 +7,11 @@ let lockedUntil = 0;
 /** Admin login (POST only). Same-origin check (CSRF), constant-time compare, failure back-off. */
 export async function POST(req: Request) {
   const token = config().adminToken;
-  const nf = () => new Response('Not found', { status: 404, headers: { 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
+  const nf = () =>
+    new Response('Not found', {
+      status: 404,
+      headers: { 'cache-control': 'no-store', 'x-robots-tag': 'noindex' },
+    });
   if (!token) return nf();
   const origin = req.headers.get('origin');
   const host = req.headers.get('host');
@@ -21,13 +25,20 @@ export async function POST(req: Request) {
       lockedUntil = Date.now() + 15 * 60_000;
       failures = 0;
     }
-    return new Response(null, { status: 303, headers: { location: '/admin/login?e=1', 'cache-control': 'no-store' } });
+    return new Response(null, {
+      status: 303,
+      headers: { location: '/admin/login?e=1', 'cache-control': 'no-store' },
+    });
   }
   failures = 0;
   const session = createSession()!;
   const secure = cookieSecure() ? '; Secure' : '';
   return new Response(null, {
     status: 303,
-    headers: { location: '/admin', 'cache-control': 'no-store', 'set-cookie': `${SESSION_COOKIE}=${session}; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800${secure}` },
+    headers: {
+      location: '/admin',
+      'cache-control': 'no-store',
+      'set-cookie': `${SESSION_COOKIE}=${session}; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800${secure}`,
+    },
   });
 }

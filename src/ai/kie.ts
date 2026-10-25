@@ -6,5 +6,7 @@ import { unavailableProvider, type AiProvider } from './provider';
  * this rebuild, so this provider is permanently unavailable rather than guessed.
  */
 export function kieProvider(): AiProvider {
-  return unavailableProvider('Kie adapter not implemented: requires verified official endpoint, model, terms and authorized configuration');
+  return unavailableProvider(
+    'Kie adapter not implemented: requires verified official endpoint, model, terms and authorized configuration',
+  );
 }

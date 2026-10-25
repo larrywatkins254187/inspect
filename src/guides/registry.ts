@@ -3,7 +3,11 @@
  * numbers, no invented authors, no artificial freshness. CONTENT_DATE is the
  * date this text was written for the rebuild and changes only with substantive edits.
  */
-export type Block = string | { list: string[] } | { formula: string } | { table: { caption: string; headers: string[]; rows: string[][] } };
+export type Block =
+  | string
+  | { list: string[] }
+  | { formula: string }
+  | { table: { caption: string; headers: string[]; rows: string[][] } };
 
 export interface Guide {
   slug: string;
@@ -22,7 +26,8 @@ export const GUIDES: Guide[] = [
   {
     slug: 'what-is-a-pip',
     title: 'What is a pip? Pips, points and pip value explained',
-    description: 'How pips, fractional pips and points work, why JPY pairs differ, and how to calculate pip value for any position size.',
+    description:
+      'How pips, fractional pips and points work, why JPY pairs differ, and how to calculate pip value for any position size.',
     intro:
       'A pip is the standard unit for describing a price change in a currency pair. Spreads, stop distances and swap rates are usually quoted in pips, so knowing what one pip is worth for your position is the starting point for sizing trades and comparing costs.',
     contentDate: CONTENT_DATE,
@@ -58,7 +63,10 @@ export const GUIDES: Guide[] = [
         heading: 'Calculating pip value',
         blocks: [
           'Pip value is the money gained or lost when the price moves one pip. It depends on the pip size, the contract size, the number of lots and, when your account currency differs from the quote currency, a conversion rate.',
-          { formula: 'pip value (quote currency) = pip size × contract size × lots\npip value (account currency) = pip value (quote currency) × quote-to-account rate' },
+          {
+            formula:
+              'pip value (quote currency) = pip size × contract size × lots\npip value (account currency) = pip value (quote currency) × quote-to-account rate',
+          },
           'Example with typical assumptions: one standard lot of EUR/USD is often 100,000 euros. 0.0001 × 100,000 × 1 = 10 US dollars per pip. With a USD account the conversion rate is 1, so a 20-pip stop risks about 200 US dollars before costs.',
           'For USD/JPY the pip size is 0.01, so 0.01 × 100,000 × 1 = 1,000 yen per pip. In a USD account you multiply by the USD value of one yen.',
           'Contract sizes, lot steps and point sizes vary between brokers and instruments. The calculators on this site use typical defaults that you can edit; they are assumptions, not broker specifications.',
@@ -69,14 +77,29 @@ export const GUIDES: Guide[] = [
         heading: 'Why pips matter for costs',
         blocks: [
           'An advertised spread such as “from 0.8 pips” is a minimum or average under stated conditions, not a guaranteed live price. Multiplying the spread by pip value gives an estimate of the cost of opening a position; commission, swap and conversion fees are separate.',
-          { list: ['Check whether the spread is quoted in pips or points.', 'Check which account and instrument the figure applies to.', 'Check whether commission is charged per side or round turn, and per lot or per amount traded.'] },
+          {
+            list: [
+              'Check whether the spread is quoted in pips or points.',
+              'Check which account and instrument the figure applies to.',
+              'Check whether commission is charged per side or round turn, and per lot or per amount traded.',
+            ],
+          },
         ],
       },
     ],
     faqs: [
-      { q: 'Is a pip always 0.0001?', a: 'No. It is 0.0001 for most currency pairs but 0.01 for pairs quoted in Japanese yen. Non-FX instruments usually use points defined by the platform.' },
-      { q: 'What is a pipette?', a: 'A fractional pip: one tenth of a pip, shown as the fifth decimal on most pairs or the third on JPY pairs.' },
-      { q: 'Does pip value change?', a: 'In your account currency it can, because the conversion rate between the quote currency and your account currency changes.' },
+      {
+        q: 'Is a pip always 0.0001?',
+        a: 'No. It is 0.0001 for most currency pairs but 0.01 for pairs quoted in Japanese yen. Non-FX instruments usually use points defined by the platform.',
+      },
+      {
+        q: 'What is a pipette?',
+        a: 'A fractional pip: one tenth of a pip, shown as the fifth decimal on most pairs or the third on JPY pairs.',
+      },
+      {
+        q: 'Does pip value change?',
+        a: 'In your account currency it can, because the conversion rate between the quote currency and your account currency changes.',
+      },
     ],
     related: [
       { href: '/tools/pip-calculator', label: 'Pip value calculator' },
@@ -88,7 +111,8 @@ export const GUIDES: Guide[] = [
   {
     slug: 'forex-leverage-and-margin-explained',
     title: 'Forex leverage and margin explained',
-    description: 'What leverage ratios mean, how margin, equity and free margin relate, and why leverage amplifies losses as well as gains.',
+    description:
+      'What leverage ratios mean, how margin, equity and free margin relate, and why leverage amplifies losses as well as gains.',
     intro:
       'Leverage lets you control a position larger than the money in your account. The broker holds part of your balance as margin while the position is open. Leverage does not change how much the market moves — it changes how much that movement affects your account.',
     contentDate: CONTENT_DATE,
@@ -98,7 +122,10 @@ export const GUIDES: Guide[] = [
         heading: 'Leverage ratios',
         blocks: [
           'A leverage ratio such as 1:30 means a position can be up to 30 times the margin set aside for it. Equivalently, the margin requirement is 1/30 ≈ 3.33% of the position’s notional value.',
-          { formula: 'required margin = position notional ÷ leverage\nposition notional = lots × contract size × price (converted to account currency)' },
+          {
+            formula:
+              'required margin = position notional ÷ leverage\nposition notional = lots × contract size × price (converted to account currency)',
+          },
           'Example: one lot of EUR/USD at 1.1000 with a contract size of 100,000 is a notional of 110,000 US dollars. At 1:30 the margin is about 3,667 US dollars; at 1:100 it is 1,100 US dollars.',
           'Maximum leverage depends on the legal entity that holds the account, the jurisdiction, the instrument and the client classification. A “maximum leverage” figure on a broker website is not an offer that applies to every reader.',
         ],
@@ -130,9 +157,18 @@ export const GUIDES: Guide[] = [
       },
     ],
     faqs: [
-      { q: 'Is higher leverage better?', a: 'No. It lowers the margin needed but increases how quickly losses consume equity. Many traders deliberately use far less leverage than the maximum allowed.' },
-      { q: 'Why do brokers show different maximum leverage?', a: 'Limits depend on the regulating entity, jurisdiction, instrument and client classification. A figure on one page may not apply to your account.' },
-      { q: 'What is a stop-out?', a: 'An automatic closure of positions when the margin level falls to a threshold set in the account terms.' },
+      {
+        q: 'Is higher leverage better?',
+        a: 'No. It lowers the margin needed but increases how quickly losses consume equity. Many traders deliberately use far less leverage than the maximum allowed.',
+      },
+      {
+        q: 'Why do brokers show different maximum leverage?',
+        a: 'Limits depend on the regulating entity, jurisdiction, instrument and client classification. A figure on one page may not apply to your account.',
+      },
+      {
+        q: 'What is a stop-out?',
+        a: 'An automatic closure of positions when the margin level falls to a threshold set in the account terms.',
+      },
     ],
     related: [
       { href: '/tools/margin-calculator', label: 'Margin calculator' },
@@ -144,7 +180,8 @@ export const GUIDES: Guide[] = [
   {
     slug: 'mt4-vs-mt5',
     title: 'MT4 vs MT5: differences between MetaTrader 4 and MetaTrader 5',
-    description: 'How MetaTrader 4 and MetaTrader 5 differ in timeframes, order types, position accounting and MQL programs, and what to check with your broker.',
+    description:
+      'How MetaTrader 4 and MetaTrader 5 differ in timeframes, order types, position accounting and MQL programs, and what to check with your broker.',
     intro:
       'MetaTrader 4 (MT4) and MetaTrader 5 (MT5) are trading platforms made by MetaQuotes and licensed to brokers. They look similar, but MT5 is a separate platform rather than an upgrade, and programs written for one do not run unchanged on the other.',
     contentDate: CONTENT_DATE,
@@ -167,8 +204,16 @@ export const GUIDES: Guide[] = [
               headers: ['Area', 'MT4', 'MT5'],
               rows: [
                 ['Chart timeframes', '9', '21'],
-                ['Pending order types', 'Buy/Sell Limit, Buy/Sell Stop', 'Adds Buy Stop Limit and Sell Stop Limit'],
-                ['Position accounting', 'Hedging (several positions per symbol)', 'Netting or hedging, chosen by account'],
+                [
+                  'Pending order types',
+                  'Buy/Sell Limit, Buy/Sell Stop',
+                  'Adds Buy Stop Limit and Sell Stop Limit',
+                ],
+                [
+                  'Position accounting',
+                  'Hedging (several positions per symbol)',
+                  'Netting or hedging, chosen by account',
+                ],
                 ['Programming language', 'MQL4', 'MQL5'],
                 ['Strategy tester', 'Single-symbol testing', 'Multi-symbol, multi-threaded testing'],
                 ['Market depth', 'Not built in', 'Depth of market where the broker provides it'],
@@ -202,9 +247,18 @@ export const GUIDES: Guide[] = [
       },
     ],
     faqs: [
-      { q: 'Can I use my MT4 Expert Advisor on MT5?', a: 'Not directly. MQL4 and MQL5 are different languages; the program has to be ported to MQL5 and retested.' },
-      { q: 'Is MT5 just a newer MT4?', a: 'No. It is a separate platform with a different architecture, more timeframes and order types, and optional netting accounting.' },
-      { q: 'Does the platform determine my costs?', a: 'Costs are set by the broker and account type. The same broker may price MT4 and MT5 accounts differently.' },
+      {
+        q: 'Can I use my MT4 Expert Advisor on MT5?',
+        a: 'Not directly. MQL4 and MQL5 are different languages; the program has to be ported to MQL5 and retested.',
+      },
+      {
+        q: 'Is MT5 just a newer MT4?',
+        a: 'No. It is a separate platform with a different architecture, more timeframes and order types, and optional netting accounting.',
+      },
+      {
+        q: 'Does the platform determine my costs?',
+        a: 'Costs are set by the broker and account type. The same broker may price MT4 and MT5 accounts differently.',
+      },
     ],
     related: [
       { href: '/brokers', label: 'Broker directory (platform evidence)' },
@@ -215,7 +269,8 @@ export const GUIDES: Guide[] = [
   {
     slug: 'how-to-choose-a-forex-broker',
     title: 'How to choose a forex broker: a checklist based on evidence',
-    description: 'Check the legal entity, its register entry, account-specific costs, platforms and funding terms using primary sources rather than marketing claims.',
+    description:
+      'Check the legal entity, its register entry, account-specific costs, platforms and funding terms using primary sources rather than marketing claims.',
     intro:
       'A broker brand often operates through several companies in different countries, each with its own licence, rules and account terms. Choosing a broker means checking which company would hold your account and what that company actually offers you — using primary sources, not rankings.',
     contentDate: CONTENT_DATE,
@@ -276,9 +331,18 @@ export const GUIDES: Guide[] = [
       },
     ],
     faqs: [
-      { q: 'Is a broker with many regulators safer?', a: 'Not automatically. What matters is the licence of the specific entity that would hold your account and the rules that apply to you.' },
-      { q: 'Does ForexInspect recommend brokers?', a: 'No. ForexInspect publishes no ratings, rankings or recommendations. It shows dated evidence so you can check claims yourself.' },
-      { q: 'Should I rely on review scores?', a: 'Scores compress many factors into a number and may be commercially influenced. Primary documents and the regulator’s register are more reliable.' },
+      {
+        q: 'Is a broker with many regulators safer?',
+        a: 'Not automatically. What matters is the licence of the specific entity that would hold your account and the rules that apply to you.',
+      },
+      {
+        q: 'Does ForexInspect recommend brokers?',
+        a: 'No. ForexInspect publishes no ratings, rankings or recommendations. It shows dated evidence so you can check claims yourself.',
+      },
+      {
+        q: 'Should I rely on review scores?',
+        a: 'Scores compress many factors into a number and may be commercially influenced. Primary documents and the regulator’s register are more reliable.',
+      },
     ],
     related: [
       { href: '/methodology', label: 'How ForexInspect verifies evidence' },

@@ -10,7 +10,10 @@ export interface Citation {
   sourceUrl: string;
   label: string;
 }
-export type AnswerPart = { kind: 'verified'; text: string; citations: Citation[] } | { kind: 'general'; text: string } | { kind: 'no_data' };
+export type AnswerPart =
+  | { kind: 'verified'; text: string; citations: Citation[] }
+  | { kind: 'general'; text: string }
+  | { kind: 'no_data' };
 interface Turn {
   question: string;
   parts: AnswerPart[];
@@ -114,12 +117,23 @@ export function AskPanel({ siteKey }: { siteKey: string }) {
     setStatus('sending');
     const history = thread.slice(-3).flatMap((t) => [
       { role: 'user' as const, text: t.question.slice(0, 1500) },
-      { role: 'assistant' as const, text: t.parts.map((p) => (p.kind === 'no_data' ? 'No verified data.' : p.text)).join(' ').slice(0, 1500) },
+      {
+        role: 'assistant' as const,
+        text: t.parts
+          .map((p) => (p.kind === 'no_data' ? 'No verified data.' : p.text))
+          .join(' ')
+          .slice(0, 1500),
+      },
     ]);
     let code = 'NETWORK';
     try {
-      const res = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ question: question.trim(), token, history: history.slice(-6) }) });
-      const body = (await res.json().catch(() => null)) as { ok: true; parts: AnswerPart[] } | { ok: false; code: string } | null;
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ question: question.trim(), token, history: history.slice(-6) }),
+      });
+      const body = (await res.json().catch(() => null)) as
+        { ok: true; parts: AnswerPart[] } | { ok: false; code: string } | null;
       if (body && body.ok) {
         setThread((t) => [...t, { question: question.trim(), parts: body.parts }].slice(-3));
         setQuestion('');
@@ -150,7 +164,9 @@ export function AskPanel({ siteKey }: { siteKey: string }) {
           aria-invalid={error ? true : undefined}
         />
         <p id={`${id}-hint`} className="hint">
-          Answers cite published ForexInspect evidence or say plainly when we have none. No rankings, suitability judgements or personal advice. Questions and answers are kept for 30 days to prevent abuse — do not include personal details.
+          Answers cite published ForexInspect evidence or say plainly when we have none. No rankings,
+          suitability judgements or personal advice. Questions and answers are kept for 30 days to prevent
+          abuse — do not include personal details.
         </p>
         <p id={`${id}-count`} className="hint" aria-live="off">
           {question.length}/500 characters
@@ -162,7 +178,13 @@ export function AskPanel({ siteKey }: { siteKey: string }) {
         ) : null}
       </div>
       <div className="row">
-        <button ref={opener} type="button" className="btn btn-primary" onClick={open} disabled={status !== 'idle'}>
+        <button
+          ref={opener}
+          type="button"
+          className="btn btn-primary"
+          onClick={open}
+          disabled={status !== 'idle'}
+        >
           Ask
         </button>
         {thread.length ? (
@@ -183,16 +205,27 @@ export function AskPanel({ siteKey }: { siteKey: string }) {
               <span className="visually-hidden">Cancel</span>
             </button>
           </div>
-          <p className="small muted">Cloudflare Turnstile checks that a person is asking. It loads only now, when you ask.</p>
+          <p className="small muted">
+            Cloudflare Turnstile checks that a person is asking. It loads only now, when you ask.
+          </p>
           <div ref={widgetBox} style={{ minHeight: 70 }} />
           <p className="small" aria-live="polite">
-            {status === 'sending' ? 'Sending your question…' : token ? 'Verified. You can send your question.' : 'Waiting for verification…'}
+            {status === 'sending'
+              ? 'Sending your question…'
+              : token
+                ? 'Verified. You can send your question.'
+                : 'Waiting for verification…'}
           </p>
           <div className="row" style={{ justifyContent: 'flex-end' }}>
             <button type="button" className="btn btn-secondary" onClick={closeDialog}>
               Cancel
             </button>
-            <button type="button" className="btn btn-primary" onClick={submit} disabled={!token || status === 'sending'}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={submit}
+              disabled={!token || status === 'sending'}
+            >
               Send question
             </button>
           </div>

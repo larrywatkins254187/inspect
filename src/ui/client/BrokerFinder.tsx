@@ -19,7 +19,13 @@ export interface FinderEntry {
 type Presence = 'any' | 'VERIFIED' | 'NOT_VERIFIED';
 
 /** Evidence filters only — not a suitability assessment. State stays in memory (no indexable filter URLs). */
-export function BrokerFinder({ entries, headingLevel = 2 }: { entries: FinderEntry[]; headingLevel?: 2 | 3 }) {
+export function BrokerFinder({
+  entries,
+  headingLevel = 2,
+}: {
+  entries: FinderEntry[];
+  headingLevel?: 2 | 3;
+}) {
   const id = useId();
   const [q, setQ] = useState('');
   const [reg, setReg] = useState('any');
@@ -51,11 +57,25 @@ export function BrokerFinder({ entries, headingLevel = 2 }: { entries: FinderEnt
   const H = headingLevel === 2 ? 'h2' : 'h3';
   return (
     <div className="stack">
-      <form role="search" aria-label="Find a broker" onSubmit={(e) => e.preventDefault()} className="card card-tight">
+      <form
+        role="search"
+        aria-label="Find a broker"
+        onSubmit={(e) => e.preventDefault()}
+        className="card card-tight"
+      >
         <div className="search-row">
           <div className="field">
             <label htmlFor={`${id}-q`}>Search name, platform or regulator code</label>
-            <input id={`${id}-q`} className="input" type="search" value={q} maxLength={80} autoComplete="off" onChange={(e) => setQ(e.target.value)} placeholder="e.g. MT5 ASIC" />
+            <input
+              id={`${id}-q`}
+              className="input"
+              type="search"
+              value={q}
+              maxLength={80}
+              autoComplete="off"
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="e.g. MT5 ASIC"
+            />
           </div>
           <div className="field">
             <label htmlFor={`${id}-r`}>Regulator record</label>
@@ -101,20 +121,24 @@ export function BrokerFinder({ entries, headingLevel = 2 }: { entries: FinderEnt
         </div>
         <div className="row spread" style={{ marginTop: 12 }}>
           <p className="small muted" aria-live="polite" style={{ margin: 0 }}>
-            {results.length} of {entries.length} published broker{entries.length === 1 ? '' : 's'} shown{filtered ? ' (filtered)' : ''}.
+            {results.length} of {entries.length} published broker{entries.length === 1 ? '' : 's'} shown
+            {filtered ? ' (filtered)' : ''}.
           </p>
           <button type="button" className="btn btn-ghost btn-sm" onClick={reset} disabled={!filtered}>
             Clear filters
           </button>
         </div>
         <p className="small muted" style={{ margin: '8px 0 0' }}>
-          Filters check whether evidence exists. They do not rate brokers, compare deposit amounts or show where a broker accepts clients.
+          Filters check whether evidence exists. They do not rate brokers, compare deposit amounts or show
+          where a broker accepts clients.
         </p>
       </form>
       {results.length === 0 ? (
         <div className="card empty">
           <H style={{ marginTop: 0 }}>No published brokers match</H>
-          <p className="muted">Try fewer words, or clear the filters. Unpublished brokers are not searchable.</p>
+          <p className="muted">
+            Try fewer words, or clear the filters. Unpublished brokers are not searchable.
+          </p>
           <button type="button" className="btn btn-secondary" onClick={reset}>
             Clear filters
           </button>

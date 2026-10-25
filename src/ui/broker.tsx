@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import type { Faq, LicenceRecord, Sentence, ShownFact } from '@/domain/broker-view';
 import type { HistoryEntry } from '@/domain/history';
@@ -6,11 +7,31 @@ import { formatDate } from '@/lib/time';
 import { ExternalLink, NotVerified, Status } from './primitives';
 
 /** Inline evidence link to the exact fact anchor on the profile. */
-export function FactRef({ slug, fact, children, base = '/brokers' }: { slug: string; fact: Pick<ShownFact, 'anchor'>; children?: React.ReactNode; base?: string }) {
+export function FactRef({
+  slug,
+  fact,
+  children,
+  base = '/brokers',
+}: {
+  slug: string;
+  fact: Pick<ShownFact, 'anchor'>;
+  children?: React.ReactNode;
+  base?: string;
+}) {
   return <Link href={`${base}/${slug}#${fact.anchor}`}>{children ?? 'evidence'}</Link>;
 }
 
-export function SentenceText({ s, slug, facts, base = '/brokers' }: { s: Sentence; slug: string; facts: ShownFact[]; base?: string }) {
+export function SentenceText({
+  s,
+  slug,
+  facts,
+  base = '/brokers',
+}: {
+  s: Sentence;
+  slug: string;
+  facts: ShownFact[];
+  base?: string;
+}) {
   const refs = s.factIds.map((id) => facts.find((f) => f.factId === id)).filter(Boolean) as ShownFact[];
   return (
     <p>
@@ -87,7 +108,19 @@ export function FactCard({ fact, children }: { fact: ShownFact; children?: React
   );
 }
 
-export function EvidencePanel({ dates, revisionNo, factCount, sourceCount, indexable }: { dates: PageDates; revisionNo: number; factCount: number; sourceCount: number; indexable?: boolean }) {
+export function EvidencePanel({
+  dates,
+  revisionNo,
+  factCount,
+  sourceCount,
+  indexable,
+}: {
+  dates: PageDates;
+  revisionNo: number;
+  factCount: number;
+  sourceCount: number;
+  indexable?: boolean;
+}) {
   return (
     <aside className="panel" aria-label="Evidence and revision">
       <h2 style={{ marginTop: 0, fontSize: '1.05rem' }}>Evidence and revision</h2>
@@ -113,7 +146,8 @@ export function EvidencePanel({ dates, revisionNo, factCount, sourceCount, index
       </dl>
       {indexable === false ? (
         <p className="small" style={{ marginTop: 12 }}>
-          <Status kind="warn">Limited evidence</Status> Fewer than two core topics are verified, so this page is not offered to search engines.
+          <Status kind="warn">Limited evidence</Status> Fewer than two core topics are verified, so this page
+          is not offered to search engines.
         </p>
       ) : null}
       <p className="small" style={{ margin: '12px 0 0' }}>
@@ -123,7 +157,11 @@ export function EvidencePanel({ dates, revisionNo, factCount, sourceCount, index
   );
 }
 
-export function GlanceCell({ cell }: { cell: { facts: { display: string; anchor: string; notes: string[]; factId: number }[] } }) {
+export function GlanceCell({
+  cell,
+}: {
+  cell: { facts: { display: string; anchor: string; notes: string[]; factId: number }[] };
+}) {
   if (!cell.facts.length) return <NotVerified />;
   return (
     <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
@@ -137,19 +175,37 @@ export function GlanceCell({ cell }: { cell: { facts: { display: string; anchor:
   );
 }
 
-export function EntitySection({ name, named, operators, licences, slug, base = '/brokers' }: { name: string; named: ShownFact[]; operators: ShownFact[]; licences: LicenceRecord[]; slug: string; base?: string }) {
+export function EntitySection({
+  name,
+  named,
+  operators,
+  licences,
+  slug,
+  base = '/brokers',
+}: {
+  name: string;
+  named: ShownFact[];
+  operators: ShownFact[];
+  licences: LicenceRecord[];
+  slug: string;
+  base?: string;
+}) {
   return (
     <div className="stack">
       <p className="reading">
-        A brand, the companies it names, the company that operates its website and any regulatory licence are different things. ForexInspect keeps them separate and never infers a licence from a company name.
+        A brand, the companies it names, the company that operates its website and any regulatory licence are
+        different things. ForexInspect keeps them separate and never infers a licence from a company name.
       </p>
       <h3>Companies named on the official website</h3>
       {named.length ? (
         <ul>
           {named.map((f) => (
             <li key={f.factId}>
-              <strong>{f.valueText}</strong> — <Status kind="info">Named by broker</Status> <FactRef slug={slug} fact={f} base={base} />
-              {f.scope.jurisdiction ? <span className="small muted"> · Jurisdiction stated: {f.scope.jurisdiction}</span> : null}
+              <strong>{f.valueText}</strong> — <Status kind="info">Named by broker</Status>{' '}
+              <FactRef slug={slug} fact={f} base={base} />
+              {f.scope.jurisdiction ? (
+                <span className="small muted"> · Jurisdiction stated: {f.scope.jurisdiction}</span>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -163,13 +219,17 @@ export function EntitySection({ name, named, operators, licences, slug, base = '
         <ul>
           {operators.map((f) => (
             <li key={f.factId}>
-              <strong>{f.valueText}</strong> — <Status kind="ok">Operator statement verified</Status> <FactRef slug={slug} fact={f} base={base} />
+              <strong>{f.valueText}</strong> — <Status kind="ok">Operator statement verified</Status>{' '}
+              <FactRef slug={slug} fact={f} base={base} />
             </li>
           ))}
         </ul>
       ) : (
         <p>
-          <NotVerified>The company operating this website has not been verified (it needs literal “operated by” wording on an official page).</NotVerified>
+          <NotVerified>
+            The company operating this website has not been verified (it needs literal “operated by” wording
+            on an official page).
+          </NotVerified>
         </p>
       )}
       <h3>Licences matched in official registers</h3>
@@ -177,20 +237,33 @@ export function EntitySection({ name, named, operators, licences, slug, base = '
         <ul>
           {licences.map((l) => (
             <li key={`${l.regulatorCode}-${l.licenceNumber}`}>
-              {l.regulatorName} ({l.regulatorCode}) licence {l.licenceNumber} for {l.legalName}: status “{l.status}” in the register snapshot dated {formatDate(l.statusAsOf)}. <ExternalLink href={l.registerUrl}>Check the register</ExternalLink>
+              {l.regulatorName} ({l.regulatorCode}) licence {l.licenceNumber} for {l.legalName}: status “
+              {l.status}” in the register snapshot dated {formatDate(l.statusAsOf)}.{' '}
+              <ExternalLink href={l.registerUrl}>Check the register</ExternalLink>
             </li>
           ))}
         </ul>
       ) : (
         <p>
-          <NotVerified>No licence has been independently matched to a company shown here.</NotVerified> Check the regulator’s own register before relying on any claim of authorisation.
+          <NotVerified>No licence has been independently matched to a company shown here.</NotVerified> Check
+          the regulator’s own register before relying on any claim of authorisation.
         </p>
       )}
     </div>
   );
 }
 
-export function FaqList({ faqs, slug, facts, base = '/brokers' }: { faqs: Faq[]; slug: string; facts: ShownFact[]; base?: string }) {
+export function FaqList({
+  faqs,
+  slug,
+  facts,
+  base = '/brokers',
+}: {
+  faqs: Faq[];
+  slug: string;
+  facts: ShownFact[];
+  base?: string;
+}) {
   return (
     <dl className="faq">
       {faqs.map((f) => (
@@ -207,12 +280,17 @@ export function FaqList({ faqs, slug, facts, base = '/brokers' }: { faqs: Faq[];
   );
 }
 
-export function SourceList({ sources }: { sources: { url: string; host: string; lastObservedAt: string; factCount: number }[] }) {
+export function SourceList({
+  sources,
+}: {
+  sources: { url: string; host: string; lastObservedAt: string; factCount: number }[];
+}) {
   return (
     <ul>
       {sources.map((s) => (
         <li key={s.url}>
-          <ExternalLink href={s.url}>{s.url.replace(/^https:\/\//, '')}</ExternalLink> — {s.factCount} fact{s.factCount === 1 ? '' : 's'}, last observed {formatDate(s.lastObservedAt)}
+          <ExternalLink href={s.url}>{s.url.replace(/^https:\/\//, '')}</ExternalLink> — {s.factCount} fact
+          {s.factCount === 1 ? '' : 's'}, last observed {formatDate(s.lastObservedAt)}
         </li>
       ))}
     </ul>
@@ -226,7 +304,13 @@ export function HistoryList({ history }: { history: { entries: HistoryEntry[]; t
         {history.entries.map((e) => (
           <li key={e.revisionNo} style={{ marginBottom: 12 }}>
             <strong>{formatDate(e.publishedAt)}</strong> — revision {e.revisionNo}:{' '}
-            {e.kind === 'FIRST_PUBLICATION' ? 'first publication' : e.kind === 'REVERIFIED' ? 're-verification; no trading condition changed' : e.kind === 'ROLLBACK' ? 'restored an earlier revision' : 'evidence changed'}
+            {e.kind === 'FIRST_PUBLICATION'
+              ? 'first publication'
+              : e.kind === 'REVERIFIED'
+                ? 're-verification; no trading condition changed'
+                : e.kind === 'ROLLBACK'
+                  ? 'restored an earlier revision'
+                  : 'evidence changed'}
             {e.kind === 'CHANGED' || e.kind === 'ROLLBACK' ? (
               <ul className="small">
                 {e.added.map((a) => (
@@ -252,11 +336,25 @@ export function HistoryList({ history }: { history: { entries: HistoryEntry[]; t
   );
 }
 
-export function LogoOrText({ name, logo }: { name: string; logo: { src: string; width: number; height: number } | null }) {
+export function LogoOrText({
+  name,
+  logo,
+}: {
+  name: string;
+  logo: { src: string; width: number; height: number } | null;
+}) {
   if (logo) {
-    // Approved, unaltered official mark served from the permission-gated asset route.
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={logo.src} alt={`${name} logo`} width={logo.width} height={logo.height} style={{ height: 56, width: 'auto' }} />;
+    // Approved, unaltered official mark from the permission-gated asset route;
+    // the image optimizer only accepts local /asset-file/** paths (next.config.ts).
+    return (
+      <Image
+        src={logo.src}
+        alt={`${name} logo`}
+        width={logo.width}
+        height={logo.height}
+        style={{ height: 56, width: 'auto' }}
+      />
+    );
   }
   const initials = name
     .split(/\s+/)

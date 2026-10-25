@@ -63,7 +63,8 @@ export interface PolicyRow {
 
 export interface AdverseFinding {
   clause: string;
-  classification: 'NO_AUTOMATED_ACCESS' | 'NO_COMMERCIAL_USE' | 'NO_REPRODUCTION' | 'ATTRIBUTION_REQUIRED' | 'UNCLASSIFIED';
+  classification:
+    'NO_AUTOMATED_ACCESS' | 'NO_COMMERCIAL_USE' | 'NO_REPRODUCTION' | 'ATTRIBUTION_REQUIRED' | 'UNCLASSIFIED';
   blocking: boolean;
 }
 
@@ -71,9 +72,9 @@ export const getSource = (db: DB, id: number): SourceRow | null =>
   (db.prepare('SELECT * FROM source_registry WHERE id = ?').get(id) as SourceRow | undefined) ?? null;
 
 export const currentPolicy = (db: DB, sourceId: number): PolicyRow | null =>
-  (db.prepare('SELECT * FROM source_policies WHERE source_id = ? ORDER BY revision DESC LIMIT 1').get(sourceId) as
-    | PolicyRow
-    | undefined) ?? null;
+  (db
+    .prepare('SELECT * FROM source_policies WHERE source_id = ? ORDER BY revision DESC LIMIT 1')
+    .get(sourceId) as PolicyRow | undefined) ?? null;
 
 export interface UseDecision {
   allowed: boolean;
@@ -96,14 +97,17 @@ export function evaluateUse(
   if (source.state === 'RETIRED') reasons.push('SOURCE_RETIRED');
   if (source.state === 'BLOCKED') reasons.push('SOURCE_BLOCKED');
   if (source.owner_stop_notice_at) reasons.push('OWNER_STOP_NOTICE');
-  if (!['APPROVED', 'DEGRADED'].includes(source.state) && !reasons.length) reasons.push(`SOURCE_${source.state}`);
+  if (!['APPROVED', 'DEGRADED'].includes(source.state) && !reasons.length)
+    reasons.push(`SOURCE_${source.state}`);
   if (!policy) return { allowed: false, reasons: [...reasons, 'POLICY_MISSING'] };
   if (policy.reviewed_by.startsWith('model:')) reasons.push('POLICY_NOT_OWNER_REVIEWED');
   if (new Date(policy.valid_until) <= now) reasons.push('POLICY_EXPIRED');
   if (policy.access_decision !== 'ALLOWED') reasons.push(`ACCESS_${policy.access_decision}`);
-  if (policy.robots_allowed !== 1) reasons.push(policy.robots_allowed === 0 ? 'ROBOTS_DISALLOWED' : 'ROBOTS_UNKNOWN');
+  if (policy.robots_allowed !== 1)
+    reasons.push(policy.robots_allowed === 0 ? 'ROBOTS_DISALLOWED' : 'ROBOTS_UNKNOWN');
   if (purpose === 'FETCH') {
-    const fresh = policy.robots_checked_at && addHours(new Date(policy.robots_checked_at), ROBOTS_FRESH_HOURS) > now;
+    const fresh =
+      policy.robots_checked_at && addHours(new Date(policy.robots_checked_at), ROBOTS_FRESH_HOURS) > now;
     if (!fresh) reasons.push('ROBOTS_EVIDENCE_STALE');
   }
   if (policy.credentials_required) reasons.push('CREDENTIALS_REQUIRED');
@@ -113,7 +117,11 @@ export function evaluateUse(
   } catch {
     reasons.push('ADVERSE_FINDINGS_UNREADABLE');
   }
-  if (findings.some((f) => f.blocking || f.classification === 'UNCLASSIFIED' || f.classification === 'NO_AUTOMATED_ACCESS'))
+  if (
+    findings.some(
+      (f) => f.blocking || f.classification === 'UNCLASSIFIED' || f.classification === 'NO_AUTOMATED_ACCESS',
+    )
+  )
     reasons.push('ADVERSE_RESTRICTION');
   if (use === 'FACT_REFERENCE') {
     const anyUnsettled = [policy.reuse_decision, policy.commercial_decision, policy.derivative_decision].some(
@@ -162,7 +170,12 @@ const evidenceHash = (d: PolicyDecisionInput, robotsAllowed: 0 | 1 | null): stri
   hashJson({ ...d, robots_allowed: robotsAllowed, limits: d.limits ?? {} });
 
 function setSourceState(db: DB, sourceId: number, state: SourceState, reason: string, now: Date): void {
-  db.prepare('UPDATE source_registry SET state = ?, state_reason = ?, updated_at = ? WHERE id = ?').run(state, reason, now.toISOString(), sourceId);
+  db.prepare('UPDATE source_registry SET state = ?, state_reason = ?, updated_at = ? WHERE id = ?').run(
+    state,
+    reason,
+    now.toISOString(),
+    sourceId,
+  );
 }
 
 /**
@@ -194,7 +207,13 @@ export function recordOwnerPolicy(
         due,
         cur.id,
       );
-      audit(db, { actor, action: 'policy.renew', subject: `source:${sourceId}`, at: now, detail: { revision: cur.revision } });
+      audit(db, {
+        actor,
+        action: 'policy.renew',
+        subject: `source:${sourceId}`,
+        at: now,
+        detail: { revision: cur.revision },
+      });
       return { policyId: cur.id, renewed: true };
     }
     const revision = (cur?.revision ?? 0) + 1;
@@ -238,10 +257,28 @@ export function recordOwnerPolicy(
         due,
         now.toISOString(),
       );
-    db.prepare('UPDATE source_registry SET use_class = ?, updated_at = ? WHERE id = ?').run(d.use_class, now.toISOString(), sourceId);
-    const blocked = d.access_decision === 'REFUSED' || d.adverse_findings.some((f) => f.blocking || f.classification === 'UNCLASSIFIED');
-    setSourceState(db, sourceId, blocked ? 'BLOCKED' : 'TECH_PENDING', blocked ? 'owner policy refuses access' : 'awaiting robots check', now);
-    audit(db, { actor, action: 'policy.revision', subject: `source:${sourceId}`, at: now, detail: { revision, blocked } });
+    db.prepare('UPDATE source_registry SET use_class = ?, updated_at = ? WHERE id = ?').run(
+      d.use_class,
+      now.toISOString(),
+      sourceId,
+    );
+    const blocked =
+      d.access_decision === 'REFUSED' ||
+      d.adverse_findings.some((f) => f.blocking || f.classification === 'UNCLASSIFIED');
+    setSourceState(
+      db,
+      sourceId,
+      blocked ? 'BLOCKED' : 'TECH_PENDING',
+      blocked ? 'owner policy refuses access' : 'awaiting robots check',
+      now,
+    );
+    audit(db, {
+      actor,
+      action: 'policy.revision',
+      subject: `source:${sourceId}`,
+      at: now,
+      detail: { revision, blocked },
+    });
     return { policyId: Number(info.lastInsertRowid), renewed: false };
   })();
 }
@@ -264,13 +301,34 @@ export function applyRobotsOutcome(db: DB, sourceId: number, outcome: RobotsOutc
   if (source.state === 'RETIRED') return 'RETIRED';
   return db.transaction(() => {
     if (outcome.kind === 'DEFER') {
-      audit(db, { actor: 'system:policy-review', action: 'policy.defer', subject: `source:${sourceId}`, at: now, detail: { reason: outcome.reason } });
+      audit(db, {
+        actor: 'system:policy-review',
+        action: 'policy.defer',
+        subject: `source:${sourceId}`,
+        at: now,
+        detail: { reason: outcome.reason },
+      });
       return source.state;
     }
-    if (outcome.kind === 'REFUSED' || outcome.kind === 'CHALLENGE' || (outcome.kind === 'OK' && !outcome.allowed)) {
-      const reason = outcome.kind === 'OK' ? 'robots disallow' : outcome.kind === 'CHALLENGE' ? 'robots challenge' : `robots HTTP ${outcome.status}`;
+    if (
+      outcome.kind === 'REFUSED' ||
+      outcome.kind === 'CHALLENGE' ||
+      (outcome.kind === 'OK' && !outcome.allowed)
+    ) {
+      const reason =
+        outcome.kind === 'OK'
+          ? 'robots disallow'
+          : outcome.kind === 'CHALLENGE'
+            ? 'robots challenge'
+            : `robots HTTP ${outcome.status}`;
       if (source.state !== 'BLOCKED') setSourceState(db, sourceId, 'BLOCKED', reason, now);
-      audit(db, { actor: 'system:policy-review', action: 'source.block', subject: `source:${sourceId}`, at: now, detail: { reason } });
+      audit(db, {
+        actor: 'system:policy-review',
+        action: 'source.block',
+        subject: `source:${sourceId}`,
+        at: now,
+        detail: { reason },
+      });
       return 'BLOCKED';
     }
     // Robots allowed. Same decision evidence → renew the active row; a change in
@@ -290,9 +348,17 @@ export function applyRobotsOutcome(db: DB, sourceId: number, outcome: RobotsOutc
             robots_agent, robots_path, 1, @now, access_decision, reuse_decision, commercial_decision,
             derivative_decision, attribution, retention, redistribution, limits_json, credentials_required, terms_risk_accepted,
             adverse_findings_json, basis, reviewed_by, @hash, @now, @valid, @due, @now FROM source_policies WHERE id = @id`,
-        ).run({ now: now.toISOString(), hash, valid: addHours(now, FACT_REFERENCE_VALIDITY_HOURS).toISOString(), due: addHours(now, 24).toISOString(), id: policy.id });
+        ).run({
+          now: now.toISOString(),
+          hash,
+          valid: addHours(now, FACT_REFERENCE_VALIDITY_HOURS).toISOString(),
+          due: addHours(now, 24).toISOString(),
+          id: policy.id,
+        });
       } else {
-        db.prepare('UPDATE source_policies SET robots_checked_at = ?, checked_at = ?, valid_until = ?, due_at = ? WHERE id = ?').run(
+        db.prepare(
+          'UPDATE source_policies SET robots_checked_at = ?, checked_at = ?, valid_until = ?, due_at = ? WHERE id = ?',
+        ).run(
           now.toISOString(),
           now.toISOString(),
           addHours(now, FACT_REFERENCE_VALIDITY_HOURS).toISOString(),
@@ -302,7 +368,12 @@ export function applyRobotsOutcome(db: DB, sourceId: number, outcome: RobotsOutc
       }
       const next: SourceState = source.state === 'BLOCKED' ? 'BLOCKED' : 'APPROVED';
       if (next !== source.state) setSourceState(db, sourceId, next, 'robots allowed', now);
-      audit(db, { actor: 'system:policy-review', action: 'policy.robots_ok', subject: `source:${sourceId}`, at: now });
+      audit(db, {
+        actor: 'system:policy-review',
+        action: 'policy.robots_ok',
+        subject: `source:${sourceId}`,
+        at: now,
+      });
       return next;
     }
     // Previously disallowed and now allowed: requires owner reopen; stay blocked.
@@ -337,9 +408,19 @@ function policyToInput(p: PolicyRow): PolicyDecisionInput {
 /** Owner stop notice stops both use classes immediately. */
 export function recordStopNotice(db: DB, sourceId: number, actor: string, note: string, now: Date): void {
   db.transaction(() => {
-    db.prepare('UPDATE source_registry SET owner_stop_notice_at = ?, updated_at = ? WHERE id = ?').run(now.toISOString(), now.toISOString(), sourceId);
+    db.prepare('UPDATE source_registry SET owner_stop_notice_at = ?, updated_at = ? WHERE id = ?').run(
+      now.toISOString(),
+      now.toISOString(),
+      sourceId,
+    );
     setSourceState(db, sourceId, 'BLOCKED', 'source-owner stop notice', now);
-    audit(db, { actor, action: 'source.stop_notice', subject: `source:${sourceId}`, at: now, detail: { note: note.slice(0, 200) } });
+    audit(db, {
+      actor,
+      action: 'source.stop_notice',
+      subject: `source:${sourceId}`,
+      at: now,
+      detail: { note: note.slice(0, 200) },
+    });
   })();
 }
 
@@ -349,7 +430,13 @@ export function reopenSource(db: DB, sourceId: number, actor: string, reason: st
   if (!s || s.state !== 'BLOCKED') throw new Error('source is not blocked');
   if (s.owner_stop_notice_at) throw new Error('a source-owner stop notice is in force');
   db.transaction(() => {
-    audit(db, { actor, action: 'source.reopen', subject: `source:${sourceId}`, at: now, detail: { reason: reason.slice(0, 200) } });
+    audit(db, {
+      actor,
+      action: 'source.reopen',
+      subject: `source:${sourceId}`,
+      at: now,
+      detail: { reason: reason.slice(0, 200) },
+    });
     setSourceState(db, sourceId, 'POLICY_PENDING', 'owner reopened; review required', now);
   })();
 }
@@ -357,7 +444,13 @@ export function reopenSource(db: DB, sourceId: number, actor: string, reason: st
 export function retireSource(db: DB, sourceId: number, actor: string, reason: string, now: Date): void {
   db.transaction(() => {
     setSourceState(db, sourceId, 'RETIRED', reason.slice(0, 200), now);
-    audit(db, { actor, action: 'source.retire', subject: `source:${sourceId}`, at: now, detail: { reason: reason.slice(0, 200) } });
+    audit(db, {
+      actor,
+      action: 'source.retire',
+      subject: `source:${sourceId}`,
+      at: now,
+      detail: { reason: reason.slice(0, 200) },
+    });
   })();
 }
 

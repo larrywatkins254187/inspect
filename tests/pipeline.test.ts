@@ -1,10 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import { runExtractionPass } from '@/domain/extract';
 import { promoteDocument, rejectFact, resolveConflict, withdrawFact } from '@/domain/promote';
-import { publishBroker, publishRevision, qaRevision, createDraft, brokerSnapshot, retractPage, rollbackPage, runAutoPublication, type CitingContent } from '@/domain/publication';
+import {
+  publishBroker,
+  publishRevision,
+  qaRevision,
+  createDraft,
+  brokerSnapshot,
+  retractPage,
+  rollbackPage,
+  runAutoPublication,
+  type CitingContent,
+} from '@/domain/publication';
 import { readAccounts, readDirectory, readFees, readProfile } from '@/domain/read';
 import { recordStopNotice } from '@/domain/policy';
-import { at, EXAMPLE_TEXT, fakeProvider, GOOD_READINGS, insertDocument, r, seedApprovedSource, T0, tempDb } from './helpers';
+import {
+  at,
+  EXAMPLE_TEXT,
+  fakeProvider,
+  GOOD_READINGS,
+  insertDocument,
+  r,
+  seedApprovedSource,
+  T0,
+  tempDb,
+} from './helpers';
 
 const out = (readings: unknown[]) => JSON.stringify({ readings });
 const opts = (now: Date) => ({ now, publicationEnabled: true });
@@ -29,7 +49,11 @@ describe('evidence → page vertical slice', () => {
     const res = promoteDocument(db, docId, T0);
     expect(res.filter((x) => x.outcome === 'ACCEPTED')).toHaveLength(GOOD_READINGS.length);
     // Two readings of one source: facts cite one document.
-    const docs = db.prepare('SELECT count(DISTINCT o.document_id) AS n FROM verified_facts f JOIN fact_observations o ON o.id = f.observation_id').get() as { n: number };
+    const docs = db
+      .prepare(
+        'SELECT count(DISTINCT o.document_id) AS n FROM verified_facts f JOIN fact_observations o ON o.id = f.observation_id',
+      )
+      .get() as { n: number };
     expect(docs.n).toBe(1);
     // Named company on a page is BROKER_DISCLOSURE, not a verified operator or licence.
     const rel = db.prepare('SELECT relationship FROM broker_entities').all() as { relationship: string }[];
@@ -38,10 +62,14 @@ describe('evidence → page vertical slice', () => {
   });
 
   it('does not promote when passes disagree or a single pass exists', async () => {
-    const altered = GOOD_READINGS.map((x) => (x.field === 'minimum_deposit' && x.scope.account === 'Standard' ? { ...x, value: '250' } : x));
+    const altered = GOOD_READINGS.map((x) =>
+      x.field === 'minimum_deposit' && x.scope.account === 'Standard' ? { ...x, value: '250' } : x,
+    );
     const { db, docId } = await acceptedBroker(GOOD_READINGS, altered);
     const res = promoteDocument(db, docId, T0);
-    expect(res.find((x) => x.field === 'minimum_deposit' && x.scopeKey.includes('"standard"'))?.outcome).toMatch(/PASS_DISAGREEMENT|SINGLE_READING/);
+    expect(
+      res.find((x) => x.field === 'minimum_deposit' && x.scopeKey.includes('"standard"'))?.outcome,
+    ).toMatch(/PASS_DISAGREEMENT|SINGLE_READING/);
   });
 
   it('rejects invalid readings: ambiguous $, missing instrument, unsupported licence claims', async () => {
@@ -53,7 +81,12 @@ describe('evidence → page vertical slice', () => {
     ];
     const { a } = await acceptedBroker(bad, bad);
     expect(a.observations).toBe(0);
-    expect(a.rejected.map((x) => x.problems[0])).toEqual(['CURRENCY_MISSING', 'INSTRUMENT_NOT_EURUSD', 'FIELD_NOT_EXTRACTABLE', 'LEVERAGE_NOT_IN_QUOTE']);
+    expect(a.rejected.map((x) => x.problems[0])).toEqual([
+      'CURRENCY_MISSING',
+      'INSTRUMENT_NOT_EURUSD',
+      'FIELD_NOT_EXTRACTABLE',
+      'LEVERAGE_NOT_IN_QUOTE',
+    ]);
   });
 
   it('reuses receipts: unchanged input causes no second model call', async () => {
@@ -81,7 +114,11 @@ describe('evidence → page vertical slice', () => {
     // Publication off → nothing public.
     expect(readProfile(db, 'example-markets', { now: at(2), publicationEnabled: false })).toBeNull();
     // Idempotent publish.
-    expect(publishBroker(db, src.brokerId, at(3), 'owner:test').pages.map((p) => p.result)).toEqual(['UNCHANGED', 'UNCHANGED', 'UNCHANGED']);
+    expect(publishBroker(db, src.brokerId, at(3), 'owner:test').pages.map((p) => p.result)).toEqual([
+      'UNCHANGED',
+      'UNCHANGED',
+      'UNCHANGED',
+    ]);
   });
 
   it('expires at read time without any write, and hides conflicted/withdrawn facts', async () => {
@@ -90,9 +127,13 @@ describe('evidence → page vertical slice', () => {
     publishBroker(db, src.brokerId, at(1), 'owner:test');
     expect(readProfile(db, 'example-markets', opts(at(167)))).not.toBeNull();
     expect(readProfile(db, 'example-markets', opts(at(169)))).toBeNull(); // 168h TTL; profile floor fails once numeric facts expire
-    const f = db.prepare("SELECT id FROM verified_facts WHERE field_key = 'trading_commission'").get() as { id: number };
+    const f = db.prepare("SELECT id FROM verified_facts WHERE field_key = 'trading_commission'").get() as {
+      id: number;
+    };
     withdrawFact(db, f.id, 'source page removed', 'owner:test', at(2));
-    const sp = db.prepare("SELECT id FROM verified_facts WHERE field_key = 'eurusd_spread' LIMIT 1").get() as { id: number };
+    const sp = db
+      .prepare("SELECT id FROM verified_facts WHERE field_key = 'eurusd_spread' LIMIT 1")
+      .get() as { id: number };
     withdrawFact(db, sp.id, 'source page removed', 'owner:test', at(2));
     const prof = readProfile(db, 'example-markets', opts(at(3)))!;
     expect(prof.view.facts.some((x) => x.field === 'trading_commission')).toBe(false);
@@ -112,21 +153,37 @@ describe('evidence → page vertical slice', () => {
     const { db, src, docId } = await acceptedBroker();
     promoteDocument(db, docId, T0);
     const snap = brokerSnapshot(db, src.brokerId, 'BROKER_PROFILE', at(1))!;
-    const { revisionId } = createDraft(db, { kind: 'BROKER_PROFILE', path: '/brokers/example-markets', brokerId: src.brokerId, comparisonKey: null, content: snap as unknown as CitingContent }, at(1));
+    const { revisionId } = createDraft(
+      db,
+      {
+        kind: 'BROKER_PROFILE',
+        path: '/brokers/example-markets',
+        brokerId: src.brokerId,
+        comparisonKey: null,
+        content: snap as unknown as CitingContent,
+      },
+      at(1),
+    );
     expect(qaRevision(db, revisionId, at(1)).passed).toBe(true);
-    const f = db.prepare("SELECT id FROM verified_facts WHERE field_key = 'minimum_deposit' LIMIT 1").get() as { id: number };
+    const f = db
+      .prepare("SELECT id FROM verified_facts WHERE field_key = 'minimum_deposit' LIMIT 1")
+      .get() as { id: number };
     rejectFact(db, f.id, 'owner found wrong scope', 'owner:test', at(1));
     const pub = publishRevision(db, revisionId, at(1), 'owner:test');
     expect(pub.outcome).toBe('ABORTED');
     expect(pub.reasons).toContain('FACTS_CHANGED_AFTER_QA');
-    const page = db.prepare("SELECT state, current_revision_id FROM content_pages WHERE path = '/brokers/example-markets'").get() as { state: string; current_revision_id: number | null };
+    const page = db
+      .prepare("SELECT state, current_revision_id FROM content_pages WHERE path = '/brokers/example-markets'")
+      .get() as { state: string; current_revision_id: number | null };
     expect(page).toEqual({ state: 'DRAFT', current_revision_id: null });
   });
 
   it('owner rejection blocks silent re-acceptance; different value in same scope opens a conflict', async () => {
     const { db, src, docId } = await acceptedBroker();
     promoteDocument(db, docId, T0);
-    const dep = db.prepare("SELECT id FROM verified_facts WHERE field_key = 'maximum_leverage'").get() as { id: number };
+    const dep = db.prepare("SELECT id FROM verified_facts WHERE field_key = 'maximum_leverage'").get() as {
+      id: number;
+    };
     rejectFact(db, dep.id, 'wrong', 'owner:test', at(1));
     const doc2 = insertDocument(db, src.sourceId, src.url, at(2));
     const p2 = fakeProvider([out(GOOD_READINGS), out(GOOD_READINGS)]);
@@ -140,28 +197,49 @@ describe('evidence → page vertical slice', () => {
   it('different value from a different source opens a conflict that only an owner resolves', async () => {
     const { db, src, docId } = await acceptedBroker();
     promoteDocument(db, docId, T0);
-    db.prepare("INSERT INTO source_registry (broker_id, url, host, created_at, updated_at) VALUES (?, 'https://www.example-markets.com/pricing', 'www.example-markets.com', ?, ?)").run(src.brokerId, T0.toISOString(), T0.toISOString());
-    const s2 = (db.prepare("SELECT id FROM source_registry WHERE url LIKE '%pricing'").get() as { id: number }).id;
+    db.prepare(
+      "INSERT INTO source_registry (broker_id, url, host, created_at, updated_at) VALUES (?, 'https://www.example-markets.com/pricing', 'www.example-markets.com', ?, ?)",
+    ).run(src.brokerId, T0.toISOString(), T0.toISOString());
+    const s2 = (
+      db.prepare("SELECT id FROM source_registry WHERE url LIKE '%pricing'").get() as { id: number }
+    ).id;
     const { recordOwnerPolicy, applyRobotsOutcome } = await import('@/domain/policy');
     const { ownerPolicy } = await import('./helpers');
-    recordOwnerPolicy(db, s2, ownerPolicy('www.example-markets.com', { robots_path: '/pricing' }), 'owner:test', T0);
+    recordOwnerPolicy(
+      db,
+      s2,
+      ownerPolicy('www.example-markets.com', { robots_path: '/pricing' }),
+      'owner:test',
+      T0,
+    );
     applyRobotsOutcome(db, s2, { kind: 'OK', allowed: true }, T0);
     const text = 'Standard account\nMinimum deposit: USD 100. Maximum leverage up to 1:500.';
     const doc2 = insertDocument(db, s2, 'https://www.example-markets.com/pricing', at(1), text);
-    const reading = [r('minimum_deposit', '100', 'Minimum deposit: USD 100.', { currency: 'USD', scope: { account: 'Standard' } })];
+    const reading = [
+      r('minimum_deposit', '100', 'Minimum deposit: USD 100.', {
+        currency: 'USD',
+        scope: { account: 'Standard' },
+      }),
+    ];
     const p2 = fakeProvider([out(reading), out(reading)]);
     await runExtractionPass(db, p2, doc2, text, 'A', () => at(1));
     await runExtractionPass(db, p2, doc2, text, 'B', () => at(1));
     expect(promoteDocument(db, doc2, at(1))[0]!.outcome).toBe('CONFLICT_OPENED');
     publishBroker(db, src.brokerId, at(1), 'owner:test');
     const prof = readProfile(db, 'example-markets', opts(at(2)))!;
-    expect(prof.view.facts.filter((f) => f.field === 'minimum_deposit' && f.scope.account === 'Standard')).toHaveLength(0);
+    expect(
+      prof.view.facts.filter((f) => f.field === 'minimum_deposit' && f.scope.account === 'Standard'),
+    ).toHaveLength(0);
     const c = db.prepare('SELECT id FROM fact_conflicts WHERE resolved_at IS NULL').get() as { id: number };
     expect(() => resolveConflict(db, c.id, 'OWNER_SELECTED_A', 'x', 'model:codex', at(2))).toThrow();
     resolveConflict(db, c.id, 'OWNER_SELECTED_A', 'pricing page is outdated', 'owner:test', at(2));
     // The earlier snapshot excluded the disputed fact; a new revision restores it.
     expect(publishBroker(db, src.brokerId, at(2), 'owner:test').pages[0]!.result).toBe('PUBLISHED');
-    expect(readProfile(db, 'example-markets', opts(at(3)))!.view.facts.some((f) => f.field === 'minimum_deposit' && f.scope.account === 'Standard')).toBe(true);
+    expect(
+      readProfile(db, 'example-markets', opts(at(3)))!.view.facts.some(
+        (f) => f.field === 'minimum_deposit' && f.scope.account === 'Standard',
+      ),
+    ).toBe(true);
   });
 
   it('retract and rollback are idempotent and auditable; renewals are not material changes', async () => {
@@ -177,11 +255,17 @@ describe('evidence → page vertical slice', () => {
     // Old snapshot still readable via identical renewal chain.
     expect(readProfile(db, 'example-markets', opts(at(25)))).not.toBeNull();
     publishBroker(db, src.brokerId, at(25), 'owner:test');
-    const page = db.prepare("SELECT * FROM content_pages WHERE path = '/brokers/example-markets'").get() as { id: number; material_updated_at: string; first_published_at: string };
+    const page = db.prepare("SELECT * FROM content_pages WHERE path = '/brokers/example-markets'").get() as {
+      id: number;
+      material_updated_at: string;
+      first_published_at: string;
+    };
     expect(page.material_updated_at).toBe(at(1).toISOString());
     const prof = readProfile(db, 'example-markets', opts(at(26)))!;
     expect(prof.history.entries.map((e) => e.kind)).toEqual(['REVERIFIED', 'FIRST_PUBLICATION']);
-    const firstRev = db.prepare("SELECT id FROM content_revisions WHERE page_id = ? AND status = 'SUPERSEDED'").get(page.id) as { id: number };
+    const firstRev = db
+      .prepare("SELECT id FROM content_revisions WHERE page_id = ? AND status = 'SUPERSEDED'")
+      .get(page.id) as { id: number };
     expect(rollbackPage(db, page.id, firstRev.id, 'owner:test', at(26)).outcome).toBe('PUBLISHED');
     expect(rollbackPage(db, page.id, firstRev.id, 'owner:test', at(26)).outcome).toBe('NOOP');
     expect(retractPage(db, page.id, 'test', 'owner:test', at(27))).toBe('RETRACTED');
@@ -192,14 +276,22 @@ describe('evidence → page vertical slice', () => {
   it('auto publication requires both switches and aborts on mass retraction', async () => {
     const { db, src, docId } = await acceptedBroker();
     promoteDocument(db, docId, T0);
-    expect(runAutoPublication(db, at(1), { publicationEnabled: true, autoPublicationEnabled: false }).outcome).toBe('DISABLED');
+    expect(
+      runAutoPublication(db, at(1), { publicationEnabled: true, autoPublicationEnabled: false }).outcome,
+    ).toBe('DISABLED');
     const ok = runAutoPublication(db, at(1), { publicationEnabled: true, autoPublicationEnabled: true });
     expect(ok.published).toBe(3);
     // After expiry all 3 pages fail: 3 > 2 → guard aborts (and read checks still hide them).
-    const guarded = runAutoPublication(db, at(200), { publicationEnabled: true, autoPublicationEnabled: true });
+    const guarded = runAutoPublication(db, at(200), {
+      publicationEnabled: true,
+      autoPublicationEnabled: true,
+    });
     expect(guarded.outcome).toBe('ABORTED');
     expect(readProfile(db, 'example-markets', opts(at(200)))).toBeNull();
-    expect((db.prepare("SELECT count(*) AS n FROM content_pages WHERE state = 'PUBLISHED'").get() as { n: number }).n).toBe(3);
+    expect(
+      (db.prepare("SELECT count(*) AS n FROM content_pages WHERE state = 'PUBLISHED'").get() as { n: number })
+        .n,
+    ).toBe(3);
     void src;
   });
 

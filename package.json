@@ -10,10 +10,10 @@
     "node": ">=24.0.0 <25"
   },
   "scripts": {
-    "dev": "node scripts/secure.mjs dev",
+    "dev": "tsx scripts/secure.ts dev",
     "dev:raw": "next dev --hostname 127.0.0.1 --port 3417",
-    "build": "next build",
-    "start": "node scripts/secure.mjs start",
+    "build": "tsx scripts/secure.ts build",
+    "start": "tsx scripts/secure.ts start",
     "start:raw": "next start --hostname 127.0.0.1 --port 3417",
     "migrate": "tsx scripts/cli.ts migrate",
     "seed": "tsx scripts/cli.ts seed",
@@ -31,7 +31,8 @@
     "bundle": "tsx scripts/bundle-report.ts",
     "smoke": "tsx scripts/smoke.ts",
     "crawl": "tsx scripts/crawl-report.ts",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm security"
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm security",
+    "build:raw": "next build"
   },
   "dependencies": {
     "better-sqlite3": "13.0.3",
@@ -41,6 +42,7 @@
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "server-only": "0.0.1",
+    "sharp": "0.35.5",
     "zod": "4.6.6"
   },
   "devDependencies": {

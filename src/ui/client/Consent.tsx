@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 const KEY = 'fi-consent-v1';
 type Choice = 'granted' | 'denied';
@@ -22,16 +22,30 @@ const read = (): Choice | null => {
     return null;
   }
 };
+let memoryChoice: Choice | null = null;
 const write = (c: Choice) => {
+  memoryChoice = c;
   try {
     window.localStorage.setItem(KEY, c);
   } catch {
     /* storage unavailable: choice applies to this page view only */
   }
+  window.dispatchEvent(new Event('fi:consent-change'));
 };
+const subscribe = (cb: () => void) => {
+  window.addEventListener('fi:consent-change', cb);
+  window.addEventListener('storage', cb);
+  return () => {
+    window.removeEventListener('fi:consent-change', cb);
+    window.removeEventListener('storage', cb);
+  };
+};
+const snapshot = (): Choice | 'unset' => read() ?? memoryChoice ?? 'unset';
+const serverSnapshot = (): 'server' => 'server';
 
 /** Private and operational routes never load analytics. */
-export const analyticsRouteAllowed = (path: string) => !/^\/(admin|preview|api|asset-file|health)(\/|$)/.test(path);
+export const analyticsRouteAllowed = (path: string) =>
+  !/^\/(admin|preview|api|asset-file|health)(\/|$)/.test(path);
 
 /** Fire a deduplicated analytics event (no inputs, values or text are ever attached). */
 export function trackEvent(name: 'calculator_use' | 'evidence_click') {
@@ -46,7 +60,11 @@ function loadGa(id: string) {
     window.dataLayer!.push(arguments);
   };
   window.gtag('js', new Date());
-  window.gtag('config', id, { send_page_view: false, allow_google_signals: false, allow_ad_personalization_signals: false });
+  window.gtag('config', id, {
+    send_page_view: false,
+    allow_google_signals: false,
+    allow_ad_personalization_signals: false,
+  });
   const s = document.createElement('script');
   s.async = true;
   s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
@@ -69,16 +87,16 @@ function clearGaCookies() {
  */
 export function Consent({ measurementId, host }: { measurementId: string; host: string }) {
   const path = usePathname() ?? '/';
-  const [choice, setChoice] = useState<Choice | null>(null);
-  const [open, setOpen] = useState(false);
+  const stored = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
+  const choice: Choice | null = stored === 'granted' || stored === 'denied' ? stored : null;
+  const [reopened, setReopened] = useState(false);
+  const open = stored === 'unset' || reopened;
   const sent = useRef(new Set<string>());
-  const eligible = typeof window !== 'undefined' && location.protocol === 'https:' && location.hostname === host;
+  const eligible =
+    typeof window !== 'undefined' && location.protocol === 'https:' && location.hostname === host;
 
   useEffect(() => {
-    const c = read();
-    setChoice(c);
-    setOpen(c === null);
-    const reopen = () => setOpen(true);
+    const reopen = () => setReopened(true);
     window.addEventListener('fi:consent-open', reopen);
     return () => window.removeEventListener('fi:consent-open', reopen);
   }, []);
@@ -89,7 +107,12 @@ export function Consent({ measurementId, host }: { measurementId: string; host: 
     loadGa(measurementId);
     sent.current = new Set();
     const ref = document.referrer ? new URL(document.referrer).origin : undefined;
-    window.gtag?.('event', 'page_view', { page_location: `${location.origin}${path}`, page_path: path, page_referrer: ref, page_title: document.title });
+    window.gtag?.('event', 'page_view', {
+      page_location: `${location.origin}${path}`,
+      page_path: path,
+      page_referrer: ref,
+      page_title: document.title,
+    });
   }, [choice, path, eligible, measurementId]);
 
   useEffect(() => {
@@ -106,8 +129,7 @@ export function Consent({ measurementId, host }: { measurementId: string; host: 
   const decide = useCallback(
     (c: Choice) => {
       write(c);
-      setChoice(c);
-      setOpen(false);
+      setReopened(false);
       if (c === 'denied') {
         window[`ga-disable-${measurementId}`] = true;
         clearGaCookies();
@@ -123,7 +145,9 @@ export function Consent({ measurementId, host }: { measurementId: string; host: 
         Optional analytics
       </h2>
       <p className="small" style={{ marginBottom: 12 }}>
-        May we use Google Analytics to count page views and anonymous tool and evidence-link use? We never send calculator inputs, questions or personal details. You can change this any time from the footer. <a href="/privacy#analytics">Privacy details</a>.
+        May we use Google Analytics to count page views and anonymous tool and evidence-link use? We never
+        send calculator inputs, questions or personal details. You can change this any time from the footer.{' '}
+        <a href="/privacy#analytics">Privacy details</a>.
       </p>
       <div className="consent-actions">
         <button type="button" className="btn btn-secondary" onClick={() => decide('denied')}>
@@ -133,7 +157,11 @@ export function Consent({ measurementId, host }: { measurementId: string; host: 
           Accept
         </button>
       </div>
-      {choice ? <p className="small muted" style={{ margin: '8px 0 0' }}>Current choice: {choice === 'granted' ? 'accepted' : 'declined'}.</p> : null}
+      {choice ? (
+        <p className="small muted" style={{ margin: '8px 0 0' }}>
+          Current choice: {choice === 'granted' ? 'accepted' : 'declined'}.
+        </p>
+      ) : null}
     </section>
   );
 }

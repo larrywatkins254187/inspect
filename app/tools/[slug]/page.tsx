@@ -20,7 +20,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const c = calculatorBySlug(slug);
   if (!c) return {};
-  return pageMetadata({ title: c.title, description: `${c.summary} Formula, worked example, assumptions and FAQs.`.slice(0, 300), path: `/tools/${slug}` });
+  return pageMetadata({
+    title: c.title,
+    description: `${c.summary} Formula, worked example, assumptions and FAQs.`.slice(0, 300),
+    path: `/tools/${slug}`,
+  });
 }
 
 export default async function ToolPage({ params }: Params) {
@@ -57,7 +61,9 @@ export default async function ToolPage({ params }: Params) {
           <h2 id="formula-h">Formula</h2>
           <pre className="formula">{content.formula}</pre>
           <p className="small muted">
-            Notation: <em>C</em> contract size, <em>p</em> pip or point size, <em>L</em> lots, <em>R</em> quote-to-account conversion rate; direction +1 for buy, −1 for sell. These are your assumptions, not broker facts. Arithmetic uses exact decimals with explicit rounding.
+            Notation: <em>C</em> contract size, <em>p</em> pip or point size, <em>L</em> lots, <em>R</em>{' '}
+            quote-to-account conversion rate; direction +1 for buy, −1 for sell. These are your assumptions,
+            not broker facts. Arithmetic uses exact decimals with explicit rounding.
           </p>
         </section>
         <section aria-labelledby="example-h">

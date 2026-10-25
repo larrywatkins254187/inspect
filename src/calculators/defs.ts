@@ -1,8 +1,27 @@
 import { CURRENCIES, INSTRUMENTS } from '@/markets/instruments';
-import { D, Parser, fixed, floorTo, money, signed, stepDp, type CalcContext, type CalcOutput, type Dec, type FieldSpec, type Values } from './core';
+import {
+  D,
+  Parser,
+  fixed,
+  floorTo,
+  money,
+  signed,
+  stepDp,
+  type CalcContext,
+  type CalcOutput,
+  type Dec,
+  type FieldSpec,
+  type Values,
+} from './core';
 
-export type CalculatorCategory = 'Trade sizing' | 'Trade planning' | 'Chart levels' | 'Account and conversion';
-export const CATEGORIES: CalculatorCategory[] = ['Trade sizing', 'Trade planning', 'Chart levels', 'Account and conversion'];
+export type CalculatorCategory =
+  'Trade sizing' | 'Trade planning' | 'Chart levels' | 'Account and conversion';
+export const CATEGORIES: CalculatorCategory[] = [
+  'Trade sizing',
+  'Trade planning',
+  'Chart levels',
+  'Account and conversion',
+];
 
 export interface CalculatorDef {
   slug: string;
@@ -32,9 +51,29 @@ const accountCurrency: FieldSpec = {
   defaultValue: 'USD',
   options: CURRENCIES.map((c) => ({ value: c, label: c })),
 };
-const lots = (dflt = '1'): FieldSpec => ({ name: 'lots', label: 'Position size', kind: 'decimal', unit: 'lots', defaultValue: dflt });
-const contract: FieldSpec = { name: 'contractSize', label: 'Contract size per lot', kind: 'decimal', role: 'contract', unit: 'units', defaultValue: '100000' };
-const pip: FieldSpec = { name: 'pipSize', label: 'Pip / point size', kind: 'decimal', role: 'pip', defaultValue: '0.0001', help: 'Price change counted as one pip or point.' };
+const lots = (dflt = '1'): FieldSpec => ({
+  name: 'lots',
+  label: 'Position size',
+  kind: 'decimal',
+  unit: 'lots',
+  defaultValue: dflt,
+});
+const contract: FieldSpec = {
+  name: 'contractSize',
+  label: 'Contract size per lot',
+  kind: 'decimal',
+  role: 'contract',
+  unit: 'units',
+  defaultValue: '100000',
+};
+const pip: FieldSpec = {
+  name: 'pipSize',
+  label: 'Pip / point size',
+  kind: 'decimal',
+  role: 'pip',
+  defaultValue: '0.0001',
+  help: 'Price change counted as one pip or point.',
+};
 const rate: FieldSpec = {
   name: 'rate',
   label: 'Quote-to-account conversion rate',
@@ -43,8 +82,23 @@ const rate: FieldSpec = {
   defaultValue: '1',
   help: 'Account-currency value of one unit of the quote currency. Use 1 when they are the same; otherwise enter a rate or apply a dated ECB reference rate.',
 };
-const direction: FieldSpec = { name: 'direction', label: 'Direction', kind: 'select', defaultValue: 'buy', options: [ { value: 'buy', label: 'Buy (long)' }, { value: 'sell', label: 'Sell (short)' } ] };
-const precision: FieldSpec = { name: 'precision', label: 'Output decimals', kind: 'integer', defaultValue: '5', help: 'Explicit rounding for displayed levels (0–8).' };
+const direction: FieldSpec = {
+  name: 'direction',
+  label: 'Direction',
+  kind: 'select',
+  defaultValue: 'buy',
+  options: [
+    { value: 'buy', label: 'Buy (long)' },
+    { value: 'sell', label: 'Sell (short)' },
+  ],
+};
+const precision: FieldSpec = {
+  name: 'precision',
+  label: 'Output decimals',
+  kind: 'integer',
+  defaultValue: '5',
+  help: 'Explicit rounding for displayed levels (0–8).',
+};
 
 const dirSign = (d: string) => (d === 'sell' ? new D(-1) : new D(1));
 const ccyOf = (p: Parser) => p.choice('accountCurrency', CURRENCIES);
@@ -94,7 +148,13 @@ const positionSize: CalculatorDef = {
     accountCurrency,
     { name: 'balance', label: 'Account balance', kind: 'decimal', defaultValue: '10000' },
     { name: 'riskPercent', label: 'Risk per trade', kind: 'decimal', unit: '%', defaultValue: '1' },
-    { name: 'stopPips', label: 'Stop-loss distance', kind: 'decimal', unit: 'pips/points', defaultValue: '20' },
+    {
+      name: 'stopPips',
+      label: 'Stop-loss distance',
+      kind: 'decimal',
+      unit: 'pips/points',
+      defaultValue: '20',
+    },
     contract,
     pip,
     rate,
@@ -130,7 +190,9 @@ const positionSize: CalculatorDef = {
         { label: 'Risk at rounded size', value: money(actualRisk, ccy), unit: ccy },
       ],
       notes: below
-        ? [`The calculated size is below the minimum lot of ${minLot.toFixed()}; no position fits this risk and stop. Widen risk or reduce the stop distance.`]
+        ? [
+            `The calculated size is below the minimum lot of ${minLot.toFixed()}; no position fits this risk and stop. Widen risk or reduce the stop distance.`,
+          ]
         : ['Sizes are rounded down to the lot step so the risk does not exceed your target.'],
     };
   },
@@ -148,7 +210,14 @@ const margin: CalculatorDef = {
     lots(),
     contract,
     { name: 'price', label: 'Price', kind: 'decimal', defaultValue: '1.10000' },
-    { name: 'leverage', label: 'Leverage', kind: 'decimal', unit: ': 1', defaultValue: '30', help: 'Enter 30 for 1:30.' },
+    {
+      name: 'leverage',
+      label: 'Leverage',
+      kind: 'decimal',
+      unit: ': 1',
+      defaultValue: '30',
+      help: 'Enter 30 for 1:30.',
+    },
     rate,
   ],
   compute(v) {
@@ -168,7 +237,9 @@ const margin: CalculatorDef = {
         { label: 'Position notional', value: money(notional, ccy), unit: ccy },
         { label: 'Margin rate', value: fixed(new D(100).div(lev), 2), unit: '%' },
       ],
-      notes: ['Formula: lots × contract size × price × conversion rate ÷ leverage. Brokers may apply tiered or instrument-specific margin.'],
+      notes: [
+        'Formula: lots × contract size × price × conversion rate ÷ leverage. Brokers may apply tiered or instrument-specific margin.',
+      ],
     };
   },
 };
@@ -233,7 +304,8 @@ const riskReward: CalculatorDef = {
     if (d === 'buy' && !stop.lt(entry)) p.error('stop', 'For a buy, the stop must be below the entry.');
     if (d === 'buy' && !target.gt(entry)) p.error('target', 'For a buy, the target must be above the entry.');
     if (d === 'sell' && !stop.gt(entry)) p.error('stop', 'For a sell, the stop must be above the entry.');
-    if (d === 'sell' && !target.lt(entry)) p.error('target', 'For a sell, the target must be below the entry.');
+    if (d === 'sell' && !target.lt(entry))
+      p.error('target', 'For a sell, the target must be below the entry.');
     if (!p.ok) return p.fail();
     const risk = entry.minus(stop).abs();
     const reward = target.minus(entry).abs();
@@ -262,7 +334,16 @@ const sltp: CalculatorDef = {
     accountCurrency,
     direction,
     { name: 'entry', label: 'Entry price', kind: 'decimal', defaultValue: '1.10000' },
-    { name: 'mode', label: 'Distances in', kind: 'select', defaultValue: 'pips', options: [ { value: 'pips', label: 'Pips / points' }, { value: 'money', label: 'Account currency' } ] },
+    {
+      name: 'mode',
+      label: 'Distances in',
+      kind: 'select',
+      defaultValue: 'pips',
+      options: [
+        { value: 'pips', label: 'Pips / points' },
+        { value: 'money', label: 'Account currency' },
+      ],
+    },
     { name: 'stopDistance', label: 'Stop distance', kind: 'decimal', defaultValue: '20' },
     { name: 'targetDistance', label: 'Target distance', kind: 'decimal', defaultValue: '40' },
     { ...lots(), showWhen: { field: 'mode', equals: ['money'] } },
@@ -304,7 +385,9 @@ const sltp: CalculatorDef = {
         { label: 'Take-profit price', value: fixed(target, dp), primary: true },
         { label: 'Stop distance', value: fixed(stopPips, 1), unit: 'pips/points' },
         { label: 'Target distance', value: fixed(targetPips, 1), unit: 'pips/points' },
-        ...(mode === 'money' ? [{ label: 'Money distances', value: `${money(sd, ccy)} / ${money(td, ccy)}`, unit: ccy }] : []),
+        ...(mode === 'money'
+          ? [{ label: 'Money distances', value: `${money(sd, ccy)} / ${money(td, ccy)}`, unit: ccy }]
+          : []),
       ],
       notes: ['Stops can fill at a worse price during gaps or fast markets.'],
     };
@@ -320,10 +403,22 @@ const swap: CalculatorDef = {
   fields: [
     instrumentField,
     accountCurrency,
-    { name: 'swapRate', label: 'Swap rate (signed)', kind: 'decimal', unit: 'pips per lot per night', defaultValue: '-0.5', help: 'Negative = charge, positive = credit, in your broker’s pip convention.' },
+    {
+      name: 'swapRate',
+      label: 'Swap rate (signed)',
+      kind: 'decimal',
+      unit: 'pips per lot per night',
+      defaultValue: '-0.5',
+      help: 'Negative = charge, positive = credit, in your broker’s pip convention.',
+    },
     lots(),
     { name: 'nights', label: 'Nights held', kind: 'integer', defaultValue: '3' },
-    { name: 'tripleSwap', label: 'Holding period includes the triple-swap night', kind: 'checkbox', defaultValue: 'false' },
+    {
+      name: 'tripleSwap',
+      label: 'Holding period includes the triple-swap night',
+      kind: 'checkbox',
+      defaultValue: 'false',
+    },
     contract,
     pip,
     rate,
@@ -343,11 +438,18 @@ const swap: CalculatorDef = {
     return {
       ok: true,
       results: [
-        { label: total.isNeg() ? 'Total swap charged' : 'Total swap credited', value: signed(money(total, ccy)), unit: ccy, primary: true },
+        {
+          label: total.isNeg() ? 'Total swap charged' : 'Total swap credited',
+          value: signed(money(total, ccy)),
+          unit: ccy,
+          primary: true,
+        },
         { label: 'Per lot per night', value: signed(money(perLotNight, ccy)), unit: ccy },
         { label: 'Chargeable nights', value: chargeable.toFixed(0) },
       ],
-      notes: ['Swap rates are set by the broker and change. A rate quoted as money or as an annual percentage needs a different conversion.'],
+      notes: [
+        'Swap rates are set by the broker and change. A rate quoted as money or as an annual percentage needs a different conversion.',
+      ],
     };
   },
 };
@@ -358,7 +460,15 @@ const spreadCost: CalculatorDef = {
   name: 'Spread cost',
   category: 'Account and conversion',
   summary: 'Estimated cost of a spread you enter — no live spread feed.',
-  fields: [instrumentField, accountCurrency, { name: 'spread', label: 'Spread', kind: 'decimal', unit: 'pips/points', defaultValue: '1.0' }, lots(), contract, pip, rate],
+  fields: [
+    instrumentField,
+    accountCurrency,
+    { name: 'spread', label: 'Spread', kind: 'decimal', unit: 'pips/points', defaultValue: '1.0' },
+    lots(),
+    contract,
+    pip,
+    rate,
+  ],
   compute(v) {
     const p = new Parser(v);
     const ccy = ccyOf(p);
@@ -372,7 +482,9 @@ const spreadCost: CalculatorDef = {
         { label: 'Estimated spread cost', value: money(cost, ccy), unit: ccy, primary: true },
         { label: 'Per lot', value: money(s.mul(ps).mul(C).mul(R), ccy), unit: ccy },
       ],
-      notes: ['Uses the spread you enter. Actual spreads vary with time, liquidity and account type; commission is separate.'],
+      notes: [
+        'Uses the spread you enter. Actual spreads vary with time, liquidity and account type; commission is separate.',
+      ],
     };
   },
 };
@@ -384,16 +496,39 @@ const leverage: CalculatorDef = {
   category: 'Trade sizing',
   summary: 'Effective leverage of a position, or the maximum size under a leverage limit.',
   fields: [
-    { name: 'mode', label: 'Calculate', kind: 'select', defaultValue: 'effective', options: [ { value: 'effective', label: 'Effective leverage of a position' }, { value: 'max', label: 'Maximum position for a leverage limit' } ] },
+    {
+      name: 'mode',
+      label: 'Calculate',
+      kind: 'select',
+      defaultValue: 'effective',
+      options: [
+        { value: 'effective', label: 'Effective leverage of a position' },
+        { value: 'max', label: 'Maximum position for a leverage limit' },
+      ],
+    },
     instrumentField,
     accountCurrency,
     { name: 'equity', label: 'Account equity', kind: 'decimal', defaultValue: '10000' },
     { ...lots(), showWhen: { field: 'mode', equals: ['effective'] } },
-    { name: 'limit', label: 'Leverage limit', kind: 'decimal', unit: ': 1', defaultValue: '30', showWhen: { field: 'mode', equals: ['max'] } },
+    {
+      name: 'limit',
+      label: 'Leverage limit',
+      kind: 'decimal',
+      unit: ': 1',
+      defaultValue: '30',
+      showWhen: { field: 'mode', equals: ['max'] },
+    },
     contract,
     { name: 'price', label: 'Price', kind: 'decimal', defaultValue: '1.10000' },
     rate,
-    { name: 'lotStep', label: 'Lot step', kind: 'decimal', unit: 'lots', defaultValue: '0.01', showWhen: { field: 'mode', equals: ['max'] } },
+    {
+      name: 'lotStep',
+      label: 'Lot step',
+      kind: 'decimal',
+      unit: 'lots',
+      defaultValue: '0.01',
+      showWhen: { field: 'mode', equals: ['max'] },
+    },
   ],
   compute(v) {
     const p = new Parser(v);
@@ -423,7 +558,12 @@ const leverage: CalculatorDef = {
     return {
       ok: true,
       results: [
-        { label: 'Maximum position (rounded down)', value: fixed(maxLots, stepDp(step)), unit: 'lots', primary: true },
+        {
+          label: 'Maximum position (rounded down)',
+          value: fixed(maxLots, stepDp(step)),
+          unit: 'lots',
+          primary: true,
+        },
         { label: 'Maximum notional', value: money(eq.mul(lim), ccy), unit: ccy },
       ],
       notes: ['Using the maximum leaves no free margin for adverse moves.'],
@@ -438,11 +578,29 @@ const pivots: CalculatorDef = {
   category: 'Chart levels',
   summary: 'Classic, Woodie, Camarilla, Fibonacci and DeMark pivots from the previous session.',
   fields: [
-    { name: 'method', label: 'Method', kind: 'select', defaultValue: 'classic', options: [ { value: 'classic', label: 'Classic' }, { value: 'woodie', label: 'Woodie' }, { value: 'camarilla', label: 'Camarilla' }, { value: 'fibonacci', label: 'Fibonacci' }, { value: 'demark', label: 'DeMark' } ] },
+    {
+      name: 'method',
+      label: 'Method',
+      kind: 'select',
+      defaultValue: 'classic',
+      options: [
+        { value: 'classic', label: 'Classic' },
+        { value: 'woodie', label: 'Woodie' },
+        { value: 'camarilla', label: 'Camarilla' },
+        { value: 'fibonacci', label: 'Fibonacci' },
+        { value: 'demark', label: 'DeMark' },
+      ],
+    },
     { name: 'high', label: 'Previous high', kind: 'decimal', defaultValue: '1.10500' },
     { name: 'low', label: 'Previous low', kind: 'decimal', defaultValue: '1.09500' },
     { name: 'close', label: 'Previous close', kind: 'decimal', defaultValue: '1.10200' },
-    { name: 'open', label: 'Previous open (DeMark)', kind: 'decimal', defaultValue: '1.10000', showWhen: { field: 'method', equals: ['demark'] } },
+    {
+      name: 'open',
+      label: 'Previous open (DeMark)',
+      kind: 'decimal',
+      defaultValue: '1.10000',
+      showWhen: { field: 'method', equals: ['demark'] },
+    },
     precision,
   ],
   compute(v) {
@@ -499,7 +657,11 @@ const pivots: CalculatorDef = {
         ['S3', P.minus(range.mul('1.000'))],
       ];
     } else {
-      const X = C.lt(O!) ? H.plus(L.mul(2)).plus(C) : C.gt(O!) ? H.mul(2).plus(L).plus(C) : H.plus(L).plus(C.mul(2));
+      const X = C.lt(O!)
+        ? H.plus(L.mul(2)).plus(C)
+        : C.gt(O!)
+          ? H.mul(2).plus(L).plus(C)
+          : H.plus(L).plus(C.mul(2));
       rows = [
         ['R1', X.div(2).minus(L)],
         ['Pivot (P)', X.div(4)],
@@ -509,7 +671,9 @@ const pivots: CalculatorDef = {
     return {
       ok: true,
       results: rows.map(([label, d]) => ({ label, value: f(d), primary: label === 'Pivot (P)' })),
-      notes: ['Levels depend on which session high, low and close you use (time zone and session cut-off). They are reference levels, not predictions.'],
+      notes: [
+        'Levels depend on which session high, low and close you use (time zone and session cut-off). They are reference levels, not predictions.',
+      ],
     };
   },
 };
@@ -523,7 +687,16 @@ const fibonacci: CalculatorDef = {
   category: 'Chart levels',
   summary: 'Retracement and extension levels between a swing high and low.',
   fields: [
-    { name: 'direction', label: 'Swing direction', kind: 'select', defaultValue: 'up', options: [ { value: 'up', label: 'Upward swing (low → high)' }, { value: 'down', label: 'Downward swing (high → low)' } ] },
+    {
+      name: 'direction',
+      label: 'Swing direction',
+      kind: 'select',
+      defaultValue: 'up',
+      options: [
+        { value: 'up', label: 'Upward swing (low → high)' },
+        { value: 'down', label: 'Downward swing (high → low)' },
+      ],
+    },
     { name: 'high', label: 'Swing high', kind: 'decimal', defaultValue: '1.12000' },
     { name: 'low', label: 'Swing low', kind: 'decimal', defaultValue: '1.10000' },
     precision,
@@ -539,8 +712,12 @@ const fibonacci: CalculatorDef = {
     if (!p.ok) return p.fail();
     const range = H.minus(L);
     const pct = (l: string) => `${new D(l).mul(100).toFixed(1).replace(/\.0$/, '')}%`;
-    const ret = LEVELS.map((l) => [pct(l), dir === 'up' ? H.minus(range.mul(l)) : L.plus(range.mul(l))] as const);
-    const ext = EXTENSIONS.map((l) => [pct(l), dir === 'up' ? L.plus(range.mul(l)) : H.minus(range.mul(l))] as const);
+    const ret = LEVELS.map(
+      (l) => [pct(l), dir === 'up' ? H.minus(range.mul(l)) : L.plus(range.mul(l))] as const,
+    );
+    const ext = EXTENSIONS.map(
+      (l) => [pct(l), dir === 'up' ? L.plus(range.mul(l)) : H.minus(range.mul(l))] as const,
+    );
     return {
       ok: true,
       results: [{ label: 'Range', value: fixed(range, dp), primary: true }],
@@ -548,7 +725,10 @@ const fibonacci: CalculatorDef = {
       table: {
         caption: 'Fibonacci levels',
         headers: ['Type', 'Level', 'Price'],
-        rows: [...ret.map(([l, d]) => ['Retracement', l, fixed(d, dp)]), ...ext.map(([l, d]) => ['Extension', l, fixed(d, dp)])],
+        rows: [
+          ...ret.map(([l, d]) => ['Retracement', l, fixed(d, dp)]),
+          ...ext.map(([l, d]) => ['Extension', l, fixed(d, dp)]),
+        ],
       },
     };
   },
@@ -562,10 +742,37 @@ const converter: CalculatorDef = {
   summary: 'Convert between eight currencies with dated ECB reference rates or your own rate.',
   fields: [
     { name: 'amount', label: 'Amount', kind: 'decimal', defaultValue: '1000' },
-    { name: 'from', label: 'From', kind: 'select', defaultValue: 'USD', options: CURRENCIES.map((c) => ({ value: c, label: c })) },
-    { name: 'to', label: 'To', kind: 'select', defaultValue: 'EUR', options: CURRENCIES.map((c) => ({ value: c, label: c })) },
-    { name: 'rateMode', label: 'Rate', kind: 'select', defaultValue: 'reference', options: [ { value: 'reference', label: 'ECB reference rate (daily)' }, { value: 'manual', label: 'Enter my own rate' } ] },
-    { name: 'manualRate', label: 'Your rate (1 From = ? To)', kind: 'decimal', defaultValue: '', showWhen: { field: 'rateMode', equals: ['manual'] } },
+    {
+      name: 'from',
+      label: 'From',
+      kind: 'select',
+      defaultValue: 'USD',
+      options: CURRENCIES.map((c) => ({ value: c, label: c })),
+    },
+    {
+      name: 'to',
+      label: 'To',
+      kind: 'select',
+      defaultValue: 'EUR',
+      options: CURRENCIES.map((c) => ({ value: c, label: c })),
+    },
+    {
+      name: 'rateMode',
+      label: 'Rate',
+      kind: 'select',
+      defaultValue: 'reference',
+      options: [
+        { value: 'reference', label: 'ECB reference rate (daily)' },
+        { value: 'manual', label: 'Enter my own rate' },
+      ],
+    },
+    {
+      name: 'manualRate',
+      label: 'Your rate (1 From = ? To)',
+      kind: 'decimal',
+      defaultValue: '',
+      showWhen: { field: 'rateMode', equals: ['manual'] },
+    },
   ],
   compute(v, ctx) {
     const p = new Parser(v);
@@ -584,10 +791,19 @@ const converter: CalculatorDef = {
       const eur = (c: string) => (c === 'EUR' ? '1' : ctx.eurRates?.[c]);
       const a = eur(from);
       const b = eur(to);
-      if (!a || !b) return { ok: false, errors: { rateMode: 'No stored ECB reference rate is available. Enter your own rate.' } };
+      if (!a || !b)
+        return {
+          ok: false,
+          errors: { rateMode: 'No stored ECB reference rate is available. Enter your own rate.' },
+        };
       r = new D(b).div(a);
-      notes.push(`ECB euro foreign exchange reference rate${ctx.rateDate ? ` for ${ctx.rateDate}` : ''}, via Frankfurter. Reference rates are for information only and are not tradable quotes.`);
-      if (from !== 'EUR' && to !== 'EUR') notes.push('Cross rate derived through EUR (EUR/target ÷ EUR/source); this is a modification of the published rates.');
+      notes.push(
+        `ECB euro foreign exchange reference rate${ctx.rateDate ? ` for ${ctx.rateDate}` : ''}, via Frankfurter. Reference rates are for information only and are not tradable quotes.`,
+      );
+      if (from !== 'EUR' && to !== 'EUR')
+        notes.push(
+          'Cross rate derived through EUR (EUR/target ÷ EUR/source); this is a modification of the published rates.',
+        );
     }
     return {
       ok: true,
@@ -610,7 +826,13 @@ const compounding: CalculatorDef = {
   fields: [
     { name: 'start', label: 'Starting balance', kind: 'decimal', defaultValue: '10000' },
     { name: 'ratePct', label: 'Rate per period', kind: 'decimal', unit: '%', defaultValue: '1' },
-    { name: 'periods', label: 'Number of periods', kind: 'integer', defaultValue: '12', help: 'Whole periods, at most 600.' },
+    {
+      name: 'periods',
+      label: 'Number of periods',
+      kind: 'integer',
+      defaultValue: '12',
+      help: 'Whole periods, at most 600.',
+    },
     { name: 'deposit', label: 'Deposit at the end of each period', kind: 'decimal', defaultValue: '0' },
   ],
   compute(v) {
@@ -637,7 +859,9 @@ const compounding: CalculatorDef = {
         { label: 'Total deposits', value: fixed(deposits, 2) },
         { label: 'Total growth', value: signed(fixed(bal.minus(start).minus(deposits), 2)) },
       ],
-      notes: ['next = previous × (1 + rate ÷ 100) + deposit. A constant rate is an arithmetic assumption; trading returns are not constant and losses are possible.'],
+      notes: [
+        'next = previous × (1 + rate ÷ 100) + deposit. A constant rate is an arithmetic assumption; trading returns are not constant and losses are possible.',
+      ],
       table: { caption: 'Balance by period', headers: ['Period', 'Start', 'Growth', 'Deposit', 'End'], rows },
     };
   },
@@ -654,12 +878,23 @@ const drawdown: CalculatorDef = {
     const p = new Parser(v);
     const loss = p.num('loss', { min: '0', lt: '100' });
     if (!p.ok) return p.fail();
-    const rec = (x: Dec) => new D(1).div(new D(1).minus(x.div(100))).minus(1).mul(100);
+    const rec = (x: Dec) =>
+      new D(1)
+        .div(new D(1).minus(x.div(100)))
+        .minus(1)
+        .mul(100);
     return {
       ok: true,
       results: [{ label: 'Gain required to recover', value: fixed(rec(loss), 2), unit: '%', primary: true }],
       notes: ['Recovery = (1 ÷ (1 − loss fraction) − 1) × 100.'],
-      table: { caption: 'Reference', headers: ['Loss', 'Gain to recover'], rows: ['10', '20', '30', '40', '50', '60', '70', '80', '90'].map((l) => [`${l}%`, `${fixed(rec(new D(l)), 2)}%`]) },
+      table: {
+        caption: 'Reference',
+        headers: ['Loss', 'Gain to recover'],
+        rows: ['10', '20', '30', '40', '50', '60', '70', '80', '90'].map((l) => [
+          `${l}%`,
+          `${fixed(rec(new D(l)), 2)}%`,
+        ]),
+      },
     };
   },
 };
@@ -672,7 +907,13 @@ const breakEven: CalculatorDef = {
   summary: 'Win rate needed to break even for a reward/risk ratio and costs.',
   fields: [
     { name: 'rr', label: 'Reward : risk', kind: 'decimal', unit: ': 1', defaultValue: '2' },
-    { name: 'cost', label: 'Cost per trade in risk units (R)', kind: 'decimal', defaultValue: '0.1', help: 'E.g. 0.1 means costs equal 10% of the amount risked.' },
+    {
+      name: 'cost',
+      label: 'Cost per trade in risk units (R)',
+      kind: 'decimal',
+      defaultValue: '0.1',
+      help: 'E.g. 0.1 means costs equal 10% of the amount risked.',
+    },
   ],
   compute(v) {
     const p = new Parser(v);
@@ -687,7 +928,9 @@ const breakEven: CalculatorDef = {
     return {
       ok: true,
       results: [{ label: 'Break-even win rate', value: fixed(w, 2), unit: '%', primary: true }],
-      notes: ['Win rate = (1 + cost in R) ÷ (1 + reward/risk) × 100. Assumes every trade hits either the target or the stop.'],
+      notes: [
+        'Win rate = (1 + cost in R) ÷ (1 + reward/risk) × 100. Assumes every trade hits either the target or the stop.',
+      ],
     };
   },
 };
@@ -711,4 +954,5 @@ export const CALCULATORS: readonly CalculatorDef[] = [
 ];
 
 export const calculatorBySlug = (slug: string) => CALCULATORS.find((c) => c.slug === slug);
-export const defaultValues = (c: CalculatorDef): Values => Object.fromEntries(c.fields.map((f) => [f.name, f.defaultValue]));
+export const defaultValues = (c: CalculatorDef): Values =>
+  Object.fromEntries(c.fields.map((f) => [f.name, f.defaultValue]));

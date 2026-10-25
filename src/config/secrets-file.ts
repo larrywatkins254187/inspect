@@ -106,7 +106,8 @@ export function loadSecretsInto(
   const perm = checkSecretsPermissions(file);
   if (!perm.ok) return { loaded: [], skipped: 'unsafe permissions', errors: perm.problems, unknown: [] };
   const res = parseSecretsText(fs.readFileSync(file, 'utf8'));
-  if (res.errors.length) return { loaded: [], skipped: 'parse errors', errors: res.errors, unknown: res.unknown };
+  if (res.errors.length)
+    return { loaded: [], skipped: 'parse errors', errors: res.errors, unknown: res.unknown };
   const loaded: string[] = [];
   for (const [k, v] of Object.entries(res.values)) {
     if (env[k] === undefined) {

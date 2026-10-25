@@ -12,11 +12,15 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   // Empty directories are kept out of the index until they hold published evidence.
   const list = await getDirectory();
-  return pageMetadata({ ...{
-  title: 'Forex broker directory: verified evidence by topic',
-  description: 'Alphabetical directory of forex brokers with published, source-checked evidence. See which core topics are verified and which are not.',
-  path: '/brokers',
-}, noindex: list.length === 0 });
+  return pageMetadata({
+    ...{
+      title: 'Forex broker directory: verified evidence by topic',
+      description:
+        'Alphabetical directory of forex brokers with published, source-checked evidence. See which core topics are verified and which are not.',
+      path: '/brokers',
+    },
+    noindex: list.length === 0,
+  });
 }
 
 const crumbs = [
@@ -37,12 +41,21 @@ export default async function BrokersPage() {
             name: 'Published broker profiles',
             itemListOrder: 'https://schema.org/ItemListOrderAscending',
             numberOfItems: entries.length,
-            itemListElement: entries.map((e, i) => ({ '@type': 'ListItem', position: i + 1, name: e.name, url: absolute(`/brokers/${e.slug}`) })),
+            itemListElement: entries.map((e, i) => ({
+              '@type': 'ListItem',
+              position: i + 1,
+              name: e.name,
+              url: absolute(`/brokers/${e.slug}`),
+            })),
           }}
         />
       ) : null}
       <Breadcrumbs items={crumbs} />
-      <PageHeader eyebrow="Directory" title="Forex broker directory" lead="Brokers with published, source-checked evidence, in alphabetical order. Coverage shows which core topics are verified; it measures research breadth, not broker quality." />
+      <PageHeader
+        eyebrow="Directory"
+        title="Forex broker directory"
+        lead="Brokers with published, source-checked evidence, in alphabetical order. Coverage shows which core topics are verified; it measures research breadth, not broker quality."
+      />
       <section id="finder" aria-labelledby="finder-h" className="section" style={{ paddingTop: 0 }}>
         <h2 id="finder-h" className="visually-hidden">
           Search published brokers
@@ -52,10 +65,13 @@ export default async function BrokersPage() {
         ) : (
           <EmptyState title="No broker profiles are published yet">
             <p>
-              Profiles appear only after official-source evidence passes every check in our <Link href="/methodology">methodology</Link>: an owner-confirmed official domain, an approved source policy and at least three accepted facts. Research is in preparation.
+              Profiles appear only after official-source evidence passes every check in our{' '}
+              <Link href="/methodology">methodology</Link>: an owner-confirmed official domain, an approved
+              source policy and at least three accepted facts. Research is in preparation.
             </p>
             <p>
-              Meanwhile the <Link href="/tools">calculators</Link> and <Link href="/guides">guides</Link> work with assumptions you enter.
+              Meanwhile the <Link href="/tools">calculators</Link> and <Link href="/guides">guides</Link> work
+              with assumptions you enter.
             </p>
           </EmptyState>
         )}
@@ -66,7 +82,10 @@ export default async function BrokersPage() {
           <TableRegion id="coverage-cap" label="Core topic coverage by broker">
             <table className="table-compact">
               <caption>
-                Verified core topics <span className="muted">(“Not verified” means no accepted evidence yet — not zero or absent)</span>
+                Verified core topics{' '}
+                <span className="muted">
+                  (“Not verified” means no accepted evidence yet — not zero or absent)
+                </span>
               </caption>
               <thead>
                 <tr>
@@ -85,7 +104,13 @@ export default async function BrokersPage() {
                       <Link href={`/brokers/${e.slug}`}>{e.name}</Link>
                     </th>
                     {e.coverage.map((c) => (
-                      <td key={c.topic}>{c.covered ? <Status kind="ok">Verified</Status> : <Status kind="neutral">Not verified</Status>}</td>
+                      <td key={c.topic}>
+                        {c.covered ? (
+                          <Status kind="ok">Verified</Status>
+                        ) : (
+                          <Status kind="neutral">Not verified</Status>
+                        )}
+                      </td>
                     ))}
                   </tr>
                 ))}

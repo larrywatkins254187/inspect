@@ -1,6 +1,11 @@
 import Decimal from 'decimal.js';
 
-export const D = Decimal.clone({ precision: 40, rounding: Decimal.ROUND_HALF_UP, toExpNeg: -30, toExpPos: 40 });
+export const D = Decimal.clone({
+  precision: 40,
+  rounding: Decimal.ROUND_HALF_UP,
+  toExpNeg: -30,
+  toExpPos: 40,
+});
 export type Dec = InstanceType<typeof D>;
 
 export type FieldKind = 'decimal' | 'integer' | 'select' | 'checkbox';
@@ -50,14 +55,18 @@ export class Parser {
   raw(name: string): string {
     return (this.values[name] ?? '').trim();
   }
-  num(name: string, opts: { min?: string; max?: string; gt?: string; lt?: string; integer?: boolean; label?: string } = {}): Dec {
+  num(
+    name: string,
+    opts: { min?: string; max?: string; gt?: string; lt?: string; integer?: boolean; label?: string } = {},
+  ): Dec {
     const s = this.raw(name);
     const fail = (m: string) => {
       this.errors[name] ??= m;
       return new D(0);
     };
     if (s === '') return fail('Enter a value.');
-    if (!NUM.test(s)) return fail('Use digits with an optional decimal point (no commas, spaces or exponents).');
+    if (!NUM.test(s))
+      return fail('Use digits with an optional decimal point (no commas, spaces or exponents).');
     const d = new D(s);
     if (!d.isFinite()) return fail('Enter a finite number.');
     if (opts.integer && !d.isInteger()) return fail('Enter a whole number.');
@@ -91,7 +100,8 @@ export class Parser {
 
 /** Currency decimals for display rounding. */
 export const currencyDp = (ccy: string) => (ccy === 'JPY' ? 0 : 2);
-export const money = (d: Dec, ccy: string): string => d.toDecimalPlaces(currencyDp(ccy), D.ROUND_HALF_UP).toFixed(currencyDp(ccy));
+export const money = (d: Dec, ccy: string): string =>
+  d.toDecimalPlaces(currencyDp(ccy), D.ROUND_HALF_UP).toFixed(currencyDp(ccy));
 export const fixed = (d: Dec, dp: number): string => d.toDecimalPlaces(dp, D.ROUND_HALF_UP).toFixed(dp);
 /** Round down to a step (position sizing never rounds up). */
 export const floorTo = (d: Dec, step: Dec): Dec => d.div(step).floor().mul(step);

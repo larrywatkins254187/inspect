@@ -14,7 +14,8 @@ export function SiteFooter({ analyticsOffered }: { analyticsOffered: boolean }) 
               <span>{SITE_NAME}</span>
             </Link>
             <p className="muted small" style={{ marginTop: 12 }}>
-              Dated, scoped primary evidence about forex brokers, with general calculators and guides. English-language, worldwide audience.
+              Dated, scoped primary evidence about forex brokers, with general calculators and guides.
+              English-language, worldwide audience.
             </p>
           </div>
           {FOOTER_GROUPS.map((g) => (
@@ -53,12 +54,17 @@ export function SiteFooter({ analyticsOffered }: { analyticsOffered: boolean }) 
         </nav>
         <div className="footer-notes">
           <p>
-            <strong>Risk warning.</strong> {RISK_STATEMENT} See the <Link href="/risk-disclosure">risk disclosure</Link>.
+            <strong>Risk warning.</strong> {RISK_STATEMENT} See the{' '}
+            <Link href="/risk-disclosure">risk disclosure</Link>.
           </p>
           <p>
-            <strong>Independence.</strong> {COMMERCIAL_STATEMENT} ForexInspect is not a broker, does not open accounts, hold funds or execute trades.
+            <strong>Independence.</strong> {COMMERCIAL_STATEMENT} ForexInspect is not a broker, does not open
+            accounts, hold funds or execute trades.
           </p>
-          <p>© {new Date().getUTCFullYear()} {SITE_NAME}. Inter typeface under the <a href="/licenses/Inter-OFL.txt">SIL Open Font License</a>.</p>
+          <p>
+            © {new Date().getUTCFullYear()} {SITE_NAME}. Inter typeface under the{' '}
+            <a href="/licenses/Inter-OFL.txt">SIL Open Font License</a>.
+          </p>
         </div>
       </div>
     </footer>

@@ -44,7 +44,12 @@ function patternMatches(pattern: string, path: string): boolean {
   const anchored = pattern.endsWith('$');
   const body = anchored ? pattern.slice(0, -1) : pattern;
   const re = new RegExp(
-    '^' + body.split('*').map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('.*') + (anchored ? '$' : ''),
+    '^' +
+      body
+        .split('*')
+        .map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
+        .join('.*') +
+      (anchored ? '$' : ''),
   );
   return re.test(path);
 }
@@ -63,7 +68,12 @@ export function isAllowed(robotsText: string, userAgent: string, path: string): 
   let best: Rule | null = null;
   for (const r of rules) {
     if (!patternMatches(r.pattern, path)) continue;
-    if (!best || r.pattern.length > best.pattern.length || (r.pattern.length === best.pattern.length && r.allow)) best = r;
+    if (
+      !best ||
+      r.pattern.length > best.pattern.length ||
+      (r.pattern.length === best.pattern.length && r.allow)
+    )
+      best = r;
   }
   return best ? best.allow : true;
 }

@@ -2,7 +2,17 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { IconAlert, IconCheck, IconClock, IconExternal, IconInfo, IconQuestion, IconShield } from './icons';
 
-export function PageHeader({ eyebrow, title, lead, children }: { eyebrow?: string; title: string; lead?: ReactNode; children?: ReactNode }) {
+export function PageHeader({
+  eyebrow,
+  title,
+  lead,
+  children,
+}: {
+  eyebrow?: string;
+  title: string;
+  lead?: ReactNode;
+  children?: ReactNode;
+}) {
   return (
     <header className="page-header">
       {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
@@ -55,7 +65,15 @@ export function Status({ kind, children }: { kind: StatusKind; children: ReactNo
   );
 }
 
-export function Notice({ kind = 'info', title, children }: { kind?: 'info' | 'warn' | 'risk'; title?: string; children: ReactNode }) {
+export function Notice({
+  kind = 'info',
+  title,
+  children,
+}: {
+  kind?: 'info' | 'warn' | 'risk';
+  title?: string;
+  children: ReactNode;
+}) {
   const icon = kind === 'warn' ? <IconAlert /> : kind === 'risk' ? <IconShield /> : <IconInfo />;
   return (
     <div className={`notice notice-${kind}`} role={kind === 'warn' ? 'note' : undefined}>
@@ -106,5 +124,10 @@ export function NotVerified({ children = 'Not verified' }: { children?: ReactNod
 
 export function JsonLd({ data }: { data: unknown }) {
   // JSON-LD is built only from visible content; "<" is escaped to keep it inert.
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, '\\u003c') }} />;
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, '\\u003c') }}
+    />
+  );
 }

@@ -55,12 +55,16 @@ describe('independent worked examples', () => {
     const jpy = run('pip-calculator', { instrument: 'USD/JPY', pipSize: '0.01', rate: '0.0066' });
     expect(val(jpy, 'Pip value (quote currency)')).toBe('1000.0000');
     expect(val(jpy, 'Pip value (account currency)')).toBe('6.60');
-    expect(val(run('pip-calculator', { accountCurrency: 'JPY', rate: '150.25' }), 'Pip value (account currency)')).toBe('1503');
+    expect(
+      val(run('pip-calculator', { accountCurrency: 'JPY', rate: '150.25' }), 'Pip value (account currency)'),
+    ).toBe('1503');
   });
 
   it('position size rounds down and explains below-minimum', () => {
     expect(val(run('position-size-calculator', {}), 'Position size (rounded down)')).toBe('0.50');
-    expect(val(run('position-size-calculator', { stopPips: '30' }), 'Position size (rounded down)')).toBe('0.33');
+    expect(val(run('position-size-calculator', { stopPips: '30' }), 'Position size (rounded down)')).toBe(
+      '0.33',
+    );
     const tiny = run('position-size-calculator', { balance: '100', stopPips: '50' });
     expect(val(tiny, 'Position size (rounded down)')).toBe('0.00');
     expect(tiny.ok && tiny.notes[0]).toMatch(/below the minimum lot/);
@@ -70,7 +74,9 @@ describe('independent worked examples', () => {
   it('margin and leverage', () => {
     expect(val(run('margin-calculator', { price: '1.1' }), 'Required margin')).toBe('3666.67');
     expect(val(run('leverage-calculator', { price: '1.1' }), 'Effective leverage')).toBe('11.00 : 1');
-    expect(val(run('leverage-calculator', { mode: 'max', price: '1.1' }), 'Maximum position (rounded down)')).toBe('2.72');
+    expect(
+      val(run('leverage-calculator', { mode: 'max', price: '1.1' }), 'Maximum position (rounded down)'),
+    ).toBe('2.72');
   });
 
   it('profit/loss by direction', () => {
@@ -89,9 +95,15 @@ describe('independent worked examples', () => {
     const o = run('stop-loss-take-profit-calculator', {});
     expect(val(o, 'Stop-loss price')).toBe('1.09800');
     expect(val(o, 'Take-profit price')).toBe('1.10400');
-    const m = run('stop-loss-take-profit-calculator', { mode: 'money', stopDistance: '200', targetDistance: '400' });
+    const m = run('stop-loss-take-profit-calculator', {
+      mode: 'money',
+      stopDistance: '200',
+      targetDistance: '400',
+    });
     expect(val(m, 'Stop-loss price')).toBe('1.09800');
-    expect(val(run('stop-loss-take-profit-calculator', { direction: 'sell' }), 'Stop-loss price')).toBe('1.10200');
+    expect(val(run('stop-loss-take-profit-calculator', { direction: 'sell' }), 'Stop-loss price')).toBe(
+      '1.10200',
+    );
   });
 
   it('swap with sign and triple night', () => {
@@ -106,15 +118,42 @@ describe('independent worked examples', () => {
   it('pivot methods against textbook values', () => {
     const base = { high: '110', low: '100', close: '105', precision: '4' };
     const classic = run('pivot-point-calculator', base);
-    expect(['R3', 'R2', 'R1', 'Pivot (P)', 'S1', 'S2', 'S3'].map((l) => val(classic, l))).toEqual(['120.0000', '115.0000', '110.0000', '105.0000', '100.0000', '95.0000', '90.0000']);
+    expect(['R3', 'R2', 'R1', 'Pivot (P)', 'S1', 'S2', 'S3'].map((l) => val(classic, l))).toEqual([
+      '120.0000',
+      '115.0000',
+      '110.0000',
+      '105.0000',
+      '100.0000',
+      '95.0000',
+      '90.0000',
+    ]);
     const woodie = run('pivot-point-calculator', { ...base, method: 'woodie', close: '108' });
-    expect([val(woodie, 'Pivot (P)'), val(woodie, 'R1'), val(woodie, 'S1')]).toEqual(['106.5000', '113.0000', '103.0000']);
+    expect([val(woodie, 'Pivot (P)'), val(woodie, 'R1'), val(woodie, 'S1')]).toEqual([
+      '106.5000',
+      '113.0000',
+      '103.0000',
+    ]);
     const cam = run('pivot-point-calculator', { ...base, method: 'camarilla' });
-    expect([val(cam, 'R4'), val(cam, 'R3'), val(cam, 'R2'), val(cam, 'R1'), val(cam, 'S4')]).toEqual(['110.5000', '107.7500', '106.8333', '105.9167', '99.5000']);
+    expect([val(cam, 'R4'), val(cam, 'R3'), val(cam, 'R2'), val(cam, 'R1'), val(cam, 'S4')]).toEqual([
+      '110.5000',
+      '107.7500',
+      '106.8333',
+      '105.9167',
+      '99.5000',
+    ]);
     const fib = run('pivot-point-calculator', { ...base, method: 'fibonacci' });
-    expect([val(fib, 'R1'), val(fib, 'R2'), val(fib, 'R3'), val(fib, 'S1')]).toEqual(['108.8200', '111.1800', '115.0000', '101.1800']);
+    expect([val(fib, 'R1'), val(fib, 'R2'), val(fib, 'R3'), val(fib, 'S1')]).toEqual([
+      '108.8200',
+      '111.1800',
+      '115.0000',
+      '101.1800',
+    ]);
     const dm = run('pivot-point-calculator', { ...base, method: 'demark', open: '104' });
-    expect([val(dm, 'Pivot (P)'), val(dm, 'R1'), val(dm, 'S1')]).toEqual(['106.2500', '112.5000', '102.5000']);
+    expect([val(dm, 'Pivot (P)'), val(dm, 'R1'), val(dm, 'S1')]).toEqual([
+      '106.2500',
+      '112.5000',
+      '102.5000',
+    ]);
     expect(errs(run('pivot-point-calculator', { ...base, close: '111' })).close).toBeDefined();
     expect(errs(run('pivot-point-calculator', { ...base, high: '99' })).high).toBeDefined();
   });
@@ -137,7 +176,9 @@ describe('independent worked examples', () => {
     expect(val(run('currency-converter', { from: 'USD', to: 'JPY' }, ctx), 'USD → JPY')).toBe('156803');
     const missing = run('currency-converter', { from: 'USD', to: 'CHF' }, ctx);
     expect(missing.ok).toBe(false);
-    expect(val(run('currency-converter', { rateMode: 'manual', manualRate: '0.9' }), 'USD → EUR')).toBe('900.00');
+    expect(val(run('currency-converter', { rateMode: 'manual', manualRate: '0.9' }), 'USD → EUR')).toBe(
+      '900.00',
+    );
   });
 
   it('compounding matches the closed form', () => {

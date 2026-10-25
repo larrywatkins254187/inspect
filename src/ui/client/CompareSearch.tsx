@@ -14,7 +14,14 @@ export function CompareSearch({ items }: { items: { slug: string; names: string[
     <div className="stack">
       <div className="field" style={{ maxWidth: 480 }}>
         <label htmlFor={id}>Search comparisons by broker name</label>
-        <input id={id} className="input" type="search" value={q} maxLength={80} onChange={(e) => setQ(e.target.value)} />
+        <input
+          id={id}
+          className="input"
+          type="search"
+          value={q}
+          maxLength={80}
+          onChange={(e) => setQ(e.target.value)}
+        />
       </div>
       <p className="small muted" aria-live="polite">
         {shown.length} of {items.length} comparisons shown.

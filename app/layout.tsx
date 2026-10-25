@@ -18,7 +18,8 @@ const inter = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(config().siteUrl),
   title: { default: `${SITE_NAME} — ${SITE_TAGLINE}`, template: `%s | ${SITE_NAME}` },
-  description: 'Inspect forex-broker claims with dated, scoped primary evidence. No ratings, rankings, recommendations or affiliate links.',
+  description:
+    'Inspect forex-broker claims with dated, scoped primary evidence. No ratings, rankings, recommendations or affiliate links.',
   applicationName: SITE_NAME,
   formatDetection: { telephone: false, email: false, address: false },
 };

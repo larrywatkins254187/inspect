@@ -7,6 +7,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ file: s
   await connection();
   const { file } = await params;
   const db = getDb();
-  if (!databaseReady(db) || !deliverableAsset(db, file)) return new Response('Not found', { status: 404, headers: { 'cache-control': 'no-store' } });
+  if (!databaseReady(db) || !deliverableAsset(db, file))
+    return new Response('Not found', { status: 404, headers: { 'cache-control': 'no-store' } });
   return new Response(null, { status: 308, headers: { location: `/asset-file/${file}` } });
 }

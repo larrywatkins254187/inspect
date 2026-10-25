@@ -22,15 +22,26 @@ export type StructuredResult<T> =
  * the same purpose/input/policy/prompt/provider/model/adapter is reused without
  * another model call. No model call happens inside a write transaction.
  */
-export async function runStructured<T>(db: DB, provider: AiProvider, req: StructuredRequest<T>, now: () => Date): Promise<StructuredResult<T>> {
+export async function runStructured<T>(
+  db: DB,
+  provider: AiProvider,
+  req: StructuredRequest<T>,
+  now: () => Date,
+): Promise<StructuredResult<T>> {
   const prior = db
     .prepare(
       `SELECT id, output_json FROM ai_jobs WHERE status = 'SUCCEEDED' AND purpose = ? AND input_hash = ? AND policy_hash = ?
        AND prompt_version = ? AND provider = ? AND model = ? AND adapter_version = ?`,
     )
-    .get(req.purpose, req.inputHash, req.policyHash, req.promptVersion, provider.name, provider.model, provider.adapterVersion) as
-    | { id: number; output_json: string }
-    | undefined;
+    .get(
+      req.purpose,
+      req.inputHash,
+      req.policyHash,
+      req.promptVersion,
+      provider.name,
+      provider.model,
+      provider.adapterVersion,
+    ) as { id: number; output_json: string } | undefined;
   if (prior) {
     const parsed = req.schema.safeParse(JSON.parse(prior.output_json));
     if (parsed.success) return { ok: true, output: parsed.data, receiptId: prior.id, reused: true };
@@ -43,13 +54,23 @@ export async function runStructured<T>(db: DB, provider: AiProvider, req: Struct
         `INSERT INTO ai_jobs (purpose, input_hash, policy_hash, prompt_version, provider, model, adapter_version, status, started_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, 'STARTED', ?)`,
       )
-      .run(req.purpose, req.inputHash, req.policyHash, req.promptVersion, provider.name, provider.model, provider.adapterVersion, now().toISOString())
-      .lastInsertRowid,
+      .run(
+        req.purpose,
+        req.inputHash,
+        req.policyHash,
+        req.promptVersion,
+        provider.name,
+        provider.model,
+        provider.adapterVersion,
+        now().toISOString(),
+      ).lastInsertRowid,
   );
   const res = await provider.complete(req.prompt, req.jsonSchema, req.timeoutMs);
   const finish = (status: string, output: string | null, errorClass: string | null, usage: object) =>
     db
-      .prepare('UPDATE ai_jobs SET status = ?, output_json = ?, error_class = ?, usage_json = ?, finished_at = ? WHERE id = ?')
+      .prepare(
+        'UPDATE ai_jobs SET status = ?, output_json = ?, error_class = ?, usage_json = ?, finished_at = ? WHERE id = ?',
+      )
       .run(status, output, errorClass, JSON.stringify(usage), now().toISOString(), receiptId);
   if (!res.ok) {
     finish('FAILED', null, res.errorClass, { durationMs: res.durationMs });

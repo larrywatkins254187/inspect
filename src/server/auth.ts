@@ -8,7 +8,8 @@ export const SESSION_COOKIE = 'fi_admin';
 const SESSION_MS = 8 * 3_600_000;
 
 const key = (token: string) => crypto.createHash('sha256').update(`fi-admin-session:${token}`).digest();
-const sign = (token: string, payload: string) => crypto.createHmac('sha256', key(token)).update(payload).digest('base64url');
+const sign = (token: string, payload: string) =>
+  crypto.createHmac('sha256', key(token)).update(payload).digest('base64url');
 
 export function safeEqual(a: string, b: string): boolean {
   const ha = crypto.createHash('sha256').update(a).digest();

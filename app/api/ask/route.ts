@@ -30,7 +30,8 @@ export async function POST(req: Request) {
   await connection();
   const cfg = config();
   if (!askAvailability(cfg).available) return new Response('Not found', { status: 404, headers: HEADERS });
-  if (!(req.headers.get('content-type') ?? '').startsWith('application/json')) return Response.json({ ok: false, code: 'INVALID' }, { status: 400, headers: HEADERS });
+  if (!(req.headers.get('content-type') ?? '').startsWith('application/json'))
+    return Response.json({ ok: false, code: 'INVALID' }, { status: 400, headers: HEADERS });
   const raw = await readLimited(req, ASK_LIMITS.bodyBytes);
   if (raw === null) return Response.json({ ok: false, code: 'INVALID' }, { status: 400, headers: HEADERS });
   // X-Real-IP is set by our Nginx from the trusted proxy chain; raw IPs are never stored.
@@ -45,7 +46,10 @@ export async function POST(req: Request) {
     read: { now: new Date(), publicationEnabled: cfg.publicationEnabled },
   });
   if (result.ok) return Response.json(result, { headers: HEADERS });
-  return Response.json({ ok: false, code: result.code }, { status: ASK_STATUS[result.code], headers: HEADERS });
+  return Response.json(
+    { ok: false, code: result.code },
+    { status: ASK_STATUS[result.code], headers: HEADERS },
+  );
 }
 
 export async function GET() {

@@ -1,0 +1,10 @@
+# Cloudflare Email Worker for ForexInspect contact aliases. Copy to wrangler.toml and deploy with
+# `npx wrangler deploy` from an authorized Cloudflare account. Prerequisites (external):
+#   - Email Routing enabled for the zone, with routes for support/corrections/privacy/security/abuse/postmaster
+#     and DMARC/TLS-RPT addresses pointing at this Worker;
+#   - a verified destination mailbox;
+#   - secrets: `npx wrangler secret put DEST`, `... TG_TOKEN`, `... TG_CHAT` (Worker bindings, not app env).
+name = "forexinspect-email"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]

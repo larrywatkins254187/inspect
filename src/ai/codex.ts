@@ -47,35 +47,49 @@ export function codexProvider(opts: { enabled: boolean; model: string | null; bi
         opts.model,
         '-',
       ];
-      const env: Record<string, string | undefined> = { PATH: process.env.PATH, HOME: process.env.HOME, LANG: 'C.UTF-8' };
+      const env: Record<string, string | undefined> = {
+        PATH: process.env.PATH,
+        HOME: process.env.HOME,
+        LANG: 'C.UTF-8',
+      };
       if (process.env.CODEX_HOME) env.CODEX_HOME = process.env.CODEX_HOME;
       try {
-        const code = await new Promise<{ code: number | null; timedOut: boolean; stderr: string }>((resolve) => {
-          let timedOut = false;
-          let stderr = '';
-          const child = spawn(opts.bin, args, { cwd: work, env: env as NodeJS.ProcessEnv, stdio: ['pipe', 'ignore', 'pipe'] });
-          const timer = setTimeout(() => {
-            timedOut = true;
-            child.kill('SIGKILL');
-          }, timeoutMs);
-          child.stderr.on('data', (c: Buffer) => {
-            if (stderr.length < 8192) stderr += c.toString('utf8');
-          });
-          child.on('error', () => {
-            clearTimeout(timer);
-            resolve({ code: -1, timedOut, stderr });
-          });
-          child.on('close', (c) => {
-            clearTimeout(timer);
-            resolve({ code: c, timedOut, stderr });
-          });
-          child.stdin.end(prompt);
-        });
+        const code = await new Promise<{ code: number | null; timedOut: boolean; stderr: string }>(
+          (resolve) => {
+            let timedOut = false;
+            let stderr = '';
+            const child = spawn(opts.bin, args, {
+              cwd: work,
+              env: env as NodeJS.ProcessEnv,
+              stdio: ['pipe', 'ignore', 'pipe'],
+            });
+            const timer = setTimeout(() => {
+              timedOut = true;
+              child.kill('SIGKILL');
+            }, timeoutMs);
+            child.stderr.on('data', (c: Buffer) => {
+              if (stderr.length < 8192) stderr += c.toString('utf8');
+            });
+            child.on('error', () => {
+              clearTimeout(timer);
+              resolve({ code: -1, timedOut, stderr });
+            });
+            child.on('close', (c) => {
+              clearTimeout(timer);
+              resolve({ code: c, timedOut, stderr });
+            });
+            child.stdin.end(prompt);
+          },
+        );
         const durationMs = Date.now() - started;
         if (code.timedOut) return { ok: false, errorClass: 'TIMEOUT', durationMs };
         if (code.code !== 0) {
           // stderr is inspected for a coarse class only and never returned.
-          const cls = /quota|rate.?limit|429|usage limit/i.test(code.stderr) ? 'QUOTA' : /login|auth|unauthori/i.test(code.stderr) ? 'UNAVAILABLE' : 'PROVIDER_ERROR';
+          const cls = /quota|rate.?limit|429|usage limit/i.test(code.stderr)
+            ? 'QUOTA'
+            : /login|auth|unauthori/i.test(code.stderr)
+              ? 'UNAVAILABLE'
+              : 'PROVIDER_ERROR';
           return { ok: false, errorClass: cls, durationMs };
         }
         const text = fs.existsSync(outFile) ? fs.readFileSync(outFile, 'utf8').slice(0, 256 * 1024) : '';
