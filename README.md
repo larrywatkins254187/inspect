@@ -4,7 +4,7 @@ Evidence-first forex-broker research: dated, scoped facts from approved official
 calculators and four guides. Not a broker, no ratings/rankings/recommendations, no affiliate links.
 Specification: PRD v2.0 (25 October 2026). Status and blockers: [STATUS.md](STATUS.md). Feature checklist:
 [PARITY.md](PARITY.md). Design system: [DESIGN.md](DESIGN.md). Operations: [RUNBOOK.md](RUNBOOK.md),
-[docs/BACKUP.md](docs/BACKUP.md). Reports: [reports/](reports/README.md).
+[docs/BACKUP.md](docs/BACKUP.md). Go-live checklist: [docs/PRODUCTION_READINESS.md](docs/PRODUCTION_READINESS.md). Data migration: [docs/MIGRATION_SESSION.md](docs/MIGRATION_SESSION.md). Reports: [reports/](reports/README.md).
 
 ## Stack (pinned in `pnpm-lock.yaml`)
 
